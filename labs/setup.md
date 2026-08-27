@@ -130,3 +130,103 @@ uname -m
 ```
 
 At this point, the basic Ubuntu installation is complete and the VM is ready for the course development environment.
+
+## 6. Install Kernel Development Tools
+
+Install the packages needed to configure and compile the Linux kernel:
+
+```bash
+sudo apt install build-essential libncurses-dev bison flex libssl-dev libelf-dev bc dwarves
+```
+
+These packages provide the compiler, build tools, kernel configuration interface, and other tools required to build the kernel.
+
+## 7. Download Linux Kernel 7.0
+
+Download the Linux 7.0 source code.
+
+You should obtain a file similar to:
+
+```bash
+linux-7.0.tar.xz
+```
+
+Then extract it:
+
+```bash
+tar -xf linux-7.0.tar.xz
+```
+
+This creates a directory:
+
+linux-7.0/
+
+Enter the source directory:
+
+```bash
+cd linux-7.0
+```
+
+## 8. Configure the Kernel
+
+Before compiling the kernel, you must configure it using the **course-provided kernel configuration file**.
+
+The instructor will provide a configuration file named:
+
+```text
+config-7.0.0-test
+```
+
+Copy this file into the root directory of the Linux 7.0 source tree and rename it to .config:
+
+```bash
+cp config-7.0.0-test .config
+```
+
+## 9. Compile the Kernel
+
+You can compile using:
+
+```bash
+make -j2
+```
+
+## 10. Install the Kernel Modules
+
+After the kernel compilation completes successfully:
+
+```bash
+sudo make modules_install
+```
+
+## 11. Install the Kernel
+
+```bash
+sudo make install
+```
+
+## 12. Update GRUB
+
+Update the GRUB bootloader configuration:
+
+```bash
+sudo update-grub
+```
+
+## 13. Reboot and Select Linux 7.0
+
+Reboot the VM:
+
+```bash
+sudo reboot
+```
+
+## 14. Verify the Running Kernel
+
+After Ubuntu starts, open a terminal and run:
+
+```bash
+uname -r
+```
+
+
