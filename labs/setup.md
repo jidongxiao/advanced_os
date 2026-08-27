@@ -73,12 +73,6 @@ This option erases the **virtual disk inside the VM**, not the physical disk of 
 
 You do not need to manually create partitions for this course.
 
-### Swap Space
-
-Ubuntu may create a swap file automatically rather than a separate swap partition. This is acceptable for the course VM.
-
-If you want to experiment with hibernation or swap management later in the course, we will examine the swap configuration separately.
-
 After the installation finishes:
 
 1. Reboot the VM.
