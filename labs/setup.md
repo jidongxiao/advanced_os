@@ -169,7 +169,7 @@ cd linux-7.0
 
 ## 8. Configure the Kernel
 
-Before compiling the kernel, you must configure it using the **course-provided kernel configuration file**.
+For x86 users, before compiling the kernel, you must configure it using the **course-provided kernel configuration file**.
 
 The instructor will provide a configuration file named:
 
@@ -177,11 +177,13 @@ The instructor will provide a configuration file named:
 config-7.0.0-test
 ```
 
-Copy this file into the root directory of the Linux 7.0 source tree and rename it to .config:
+which is [here](config-7.0.0-test), Copy this file into the root directory of the Linux 7.0 source tree and rename it to .config:
 
 ```bash
 cp config-7.0.0-test .config
 ```
+
+For arm users, you are recommended to copy the existing config file from the /boot folder of your VM.
 
 ## 9. Compile the Kernel
 
