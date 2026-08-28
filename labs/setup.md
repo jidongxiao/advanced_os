@@ -177,7 +177,7 @@ The instructor will provide a configuration file named:
 config-7.0.0-test
 ```
 
-which is [here](config-7.0.0-test), Copy this file into the root directory of the Linux 7.0 source tree and rename it to .config:
+which is [here](config-7.0.0-test), copy this file into the root directory of the Linux 7.0 source tree and rename it to .config:
 
 ```bash
 cp config-7.0.0-test .config
