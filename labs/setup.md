@@ -2,6 +2,10 @@
 
 This document describes how to set up the **course VM**, install Ubuntu 24.04 LTS (64-bit), compile the Linux 7.0 kernel from source, and boot the VM using the newly compiled kernel.
 
+Once you are finished, submit one screenshot on Submitty: the screenshot should show the output of the command "lsb_release -a" and "uname -a", which proves that you have a Linux system which is Ubuntu 24.04 LTS 64-bit and the kernel version is 7.0 (or 7.0.0-test).
+
+Due Date: 09/04/2026, 11:59pm.
+
 ## 1. Prerequisites
 
 You will need:
