@@ -51,9 +51,16 @@ static const struct proc_ops proc_fops = {
     .proc_write = proc_write,
 };
 
+static struct proc_dir_entry *proc_entry;
 static int __init proc_init(void)
 {
-    proc_create(PROC_NAME, 0666, NULL, &proc_fops);
+    proc_entry = proc_create(PROC_NAME, 0666, NULL, &proc_fops);
+
+    if (!proc_entry) {
+        printk(KERN_ERR "proc_example: failed to create /proc/%s\n",
+               PROC_NAME);
+        return -ENOMEM;
+    }
     printk(KERN_INFO "proc_example: /proc/%s created\n", PROC_NAME);
     return 0;
 }
