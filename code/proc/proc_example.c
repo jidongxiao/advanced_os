@@ -1,7 +1,7 @@
-#include <linux/module.h>
-#include <linux/kernel.h>
-#include <linux/proc_fs.h>
-#include <linux/uaccess.h>
+#include <linux/module.h> // Module infrastructure: MODULE_*, module_init(), module_exit()
+#include <linux/kernel.h> // Kernel utilities and printk() logging macros
+#include <linux/proc_fs.h> // /proc filesystem: struct proc_ops, proc_create(), remove_proc_entry()
+#include <linux/uaccess.h> // Safe data transfer between user space and kernel space
 
 #define PROC_NAME "myprocfile"
 #define BUFFER_SIZE 128
@@ -11,13 +11,19 @@ MODULE_AUTHOR("Jidong Xiao");
 MODULE_DESCRIPTION("Example /proc module for 7.0 kernel");
 
 static char proc_buffer[BUFFER_SIZE];
-static int proc_buffer_size = 0;
+static int proc_buffer_size = 0; // static limits their visibility to this source file
+
+// proc file operations
+static const struct proc_ops proc_fops = {
+    .proc_read  = proc_read,
+    .proc_write = proc_write,
+};
 
 // read handler
 static ssize_t proc_read(struct file *file, char __user *user_buf,
                          size_t count, loff_t *ppos)
 {
-    if (*ppos > 0)  // EOF
+    if (*ppos > 0)  // EOF. ppos is a pointer to the current file position, initially, the file position is 0.
         return 0;
 
     if (copy_to_user(user_buf, proc_buffer, proc_buffer_size))
@@ -45,15 +51,15 @@ static ssize_t proc_write(struct file *file, const char __user *user_buf,
     return count;
 }
 
-// proc file operations
-static const struct proc_ops proc_fops = {
-    .proc_read  = proc_read,
-    .proc_write = proc_write,
-};
-
 static struct proc_dir_entry *proc_entry;
+
+// __init is a kernel-specific annotation that tells the kernel:
+// This function is only needed during module initialization, so its memory can be discarded after initialization finishes.
 static int __init proc_init(void)
 {
+    // Create /proc/myprocfile with read/write permissions for everyone.
+    // 0666 = rw-rw-rw- (read + write for owner, group, and others).
+    // The leading 0 means the number is written in octal.
     proc_entry = proc_create(PROC_NAME, 0666, NULL, &proc_fops);
 
     if (!proc_entry) {
@@ -65,6 +71,9 @@ static int __init proc_init(void)
     return 0;
 }
 
+// __exit marks this function as module cleanup code.
+// It is called when the module is unloaded. For code built into
+// the kernel, exit code can be discarded because it cannot be unloaded.
 static void __exit proc_exit(void)
 {
     remove_proc_entry(PROC_NAME, NULL);
