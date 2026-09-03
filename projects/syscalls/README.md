@@ -6,7 +6,7 @@ In this assignment, you will extend the Linux reboot system call mechanism to re
 
 You will implement a kernel module that intercepts system call execution, safely transfers memory across the user/kernel boundary, authenticates user credentials, and enforces security rules without modifying or recompiling the base kernel.
 
-## Background & Core Concepts
+## Background
 
 The Linux reboot system call signature is defined as:
   ```c
@@ -14,15 +14,6 @@ The Linux reboot system call signature is defined as:
   ```
 
 When performing a system restart (cmd = LINUX_REBOOT_CMD_RESTART), the 4th parameter (arg) is a pointer to user-space memory.
-
-Key Concepts Tested:
-  - User/Kernel Boundary Safety: User-space memory pointers (void __user *) 
-    cannot be dereferenced directly in kernel code. You must use safe kernel 
-    copy routines such as strncpy_from_user().
-  - System Call Interception: Using kernel dynamic tracing mechanisms to 
-    inspect and validate arguments before a system call executes.
-  - Return Value Conventions: Returning standard Linux error codes (-EPERM, 
-    -EINVAL, -EFAULT) to user space upon authentication or validation failure.
 
 ## Task Requirements
 
