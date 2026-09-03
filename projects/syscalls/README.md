@@ -30,6 +30,7 @@ Task 2: User-Space Client (reboot_auth.c). Write a C user-space client that acce
 
   - If no passphrase argument is provided on the command line, pass NULL as the 4th argument to syscall().  
   - Inspect the return code and print descriptive error messages using perror() or strerror() based on the value of errno.
+  - The user-space client program (reboot_auth) must act strictly as a pass-through interface. It must not hardcode, define, or attempt to validate the passphrase locally, nor should it branch logic based on the passphrase string. Its sole responsibility is to collect the passphrase argument supplied by the user (e.g., via argv[1]) and pass its memory address directly to the kernel via the sys_reboot system call. All policy decisions, string comparisons, and access enforcement must occur entirely within kernel space inside your kernel module.
 
 **Note**: In this assignment, you are recommended to use strncpy_from_user() instead of copy_from_user(). These two functions are similar. Use copy_from_user() for fixed-size C structures or primitive data types (e.g., int, struct foo). Use strncpy_from_user() for null-terminated strings, because it safely stops at \0 without over-reading user memory. Here are the prototype of these two functions:
 
