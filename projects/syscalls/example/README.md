@@ -1,4 +1,4 @@
-# System Call Monitoring via Kretprobes and User-Space Interfacing
+# System Call Monitoring via Kprobes and User-Space Interfacing
 
 ## OVERVIEW
 

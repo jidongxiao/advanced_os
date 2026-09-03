@@ -13,8 +13,7 @@ The Linux reboot system call signature is defined as:
   long sys_reboot(int magic1, int magic2, unsigned int cmd, void __user *arg);
   ```
 
-When performing a system restart (cmd = LINUX_REBOOT_CMD_RESTART), the 4th 
-parameter (arg) is a pointer to user-space memory. 
+When performing a system restart (cmd = LINUX_REBOOT_CMD_RESTART), the 4th parameter (arg) is a pointer to user-space memory.
 
 Key Concepts Tested:
   - User/Kernel Boundary Safety: User-space memory pointers (void __user *) 
@@ -43,6 +42,12 @@ Task 2: User-Space Client (reboot_auth.c). Write a C user-space client that acce
 
   - If no passphrase argument is provided on the command line, pass NULL as the 4th argument to syscall().  
   - Inspect the return code and print descriptive error messages using perror() or strerror() based on the value of errno.
+
+## Example Program and the Magic Number Story
+
+- You may find this [example program](./example) helpful.
+
+- You can read the story [here](magic.md) if you want to find out the meaning of the magic numbers.
 
 ## GRADING & TEST CASES
 
@@ -77,4 +82,4 @@ Submit the following files on Submitty:
 
 ## DUE DATE
 
-TBD.
+09/21/2026, 11:59pm.
