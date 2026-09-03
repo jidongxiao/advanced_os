@@ -3,61 +3,78 @@
 #include <linux/kprobes.h>
 #include <linux/cred.h>
 #include <linux/sched.h>
+#include <linux/ptrace.h>
 
 MODULE_LICENSE("GPL");
 MODULE_AUTHOR("OS Course Staff");
-MODULE_DESCRIPTION("Sample Kretprobe Interceptor for sys_reboot");
+MODULE_DESCRIPTION("Sample Kprobe Interceptor for sys_reboot");
+
+/* --------------------------------------------------------------------------
+ * Portable Architecture Symbol & Argument Helpers
+ * -------------------------------------------------------------------------- */
+#if defined(__x86_64__)
+    #define SYSCALL_SYMBOL "__x64_sys_reboot"
+    /* On x86_64: 1st arg (magic1) is in di, 4th arg (passphrase pointer) is in r10 */
+    #define GET_MAGIC1(pt)         (((struct pt_regs *)(pt)->di)->di)
+    #define GET_SYSCALL_ARG4(pt)   ((void __user *)((struct pt_regs *)(pt)->di)->r10)
+
+#elif defined(__aarch64__)
+    #define SYSCALL_SYMBOL "__arm64_sys_reboot"
+    /* On arm64: 1st arg (magic1) is in x0 (regs[0]), 4th arg is in x3 (regs[3]) */
+    #define GET_MAGIC1(pt)         (((struct pt_regs *)(pt)->regs[0])->regs[0])
+    #define GET_SYSCALL_ARG4(pt)   ((void __user *)((struct pt_regs *)(pt)->regs[0])->regs[3])
+
+#else
+    #error "Unsupported architecture"
+#endif
 
 /*
- * Return Handler: Runs as sys_reboot returns its result back to user space.
+ * Pre-Handler: Runs immediately upon entry into sys_reboot, before any
+ * internal kernel validation or execution occurs.
  */
-static int reboot_ret_handler(struct kretprobe_instance *ri, struct pt_regs *regs)
+static int reboot_pre_handler(struct kprobe *p, struct pt_regs *regs)
 {
-    /* Fetch the return value of sys_reboot */
-    int retval = regs_return_value(regs);
-    
-    /* Get caller information using kernel helpers */
+    /* Get caller information using standard kernel helpers */
     uid_t uid = __kuid_val(current_uid());
     pid_t pid = current->pid;
 
-    pr_info("[RebootMonitor] Process '%s' (PID %d, UID %d) called reboot(). Kernel returned: %d\n",
-            current->comm, pid, uid, retval);
+    /* Extract system call arguments from pt_regs using our helpers */
+    unsigned long magic1 = GET_MAGIC1(regs);
+    void __user *arg4 = GET_SYSCALL_ARG4(regs);
 
-    /* 
-     * Demonstration: If an unauthorized user attempted a reboot, 
-     * we log a warning to dmesg.
-     */
-    if (retval == -EPERM) {
-        pr_warn("[RebootMonitor] Security alert: Unauthorized reboot attempt detected!\n");
+    pr_info("[RebootMonitor] Process '%s' (PID %d, UID %d) invoked reboot()\n",
+            current->comm, pid, uid);
+    pr_info("[RebootMonitor]   -> magic1: 0x%lx, arg4 pointer: %p\n", 
+            magic1, arg4);
+
+    /* Demonstration audit check */
+    if (uid != 0) {
+        pr_warn("[RebootMonitor] Security alert: Non-root user (UID %d) attempted reboot!\n", uid);
     }
 
-    return 0;
+    return 0; /* Returning 0 allows sys_reboot execution to proceed */
 }
 
-static struct kretprobe my_kretprobe = {
-    .handler        = reboot_ret_handler,
-    /* Works out-of-the-box across both x86_64 and arm64 */
-#if defined(__x86_64__)
-    .kp.symbol_name = "__x64_sys_reboot",
-#elif defined(__aarch64__)
-    .kp.symbol_name = "__arm64_sys_reboot",
-#endif
+static struct kprobe my_kprobe = {
+    .pre_handler = reboot_pre_handler,
+    .symbol_name = SYSCALL_SYMBOL,
 };
 
 static int __init monitor_init(void)
 {
-    int ret = register_kretprobe(&my_kretprobe);
+    int ret = register_kprobe(&my_kprobe);
     if (ret < 0) {
-        pr_err("[RebootMonitor] Failed to register kretprobe: %d\n", ret);
+        pr_err("[RebootMonitor] Failed to register kprobe on %s: %d\n", 
+               SYSCALL_SYMBOL, ret);
         return ret;
     }
-    pr_info("[RebootMonitor] Loaded successfully. Monitoring reboot syscalls...\n");
+    pr_info("[RebootMonitor] Loaded successfully. Monitoring reboot syscall entry...\n");
     return 0;
 }
 
 static void __exit monitor_exit(void)
 {
-    unregister_kretprobe(&my_kretprobe);
+    unregister_kprobe(&my_kprobe);
     pr_info("[RebootMonitor] Unloaded successfully.\n");
 }
 
