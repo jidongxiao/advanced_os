@@ -36,7 +36,10 @@ Task 1: Kernel Module (reboot_guard.c). You must create a kernel module that int
     - If the passphrase does not match: Log an authentication failure warning to dmesg and force the system call to return -EPERM.
 
 Task 2: User-Space Client (reboot_auth.c). Write a C user-space client that accepts a passphrase as a command-line argument and attempts to reboot the system via raw syscall(). Requirements:  
-    - Usage syntax: ./reboot_auth <passphrase>  
+    - Usage syntax: 
+    ```bash
+    # ./reboot_auth <passphrase>  
+    ```
     - If no passphrase argument is provided on the command line, pass NULL as the 4th argument to syscall().  
     - Inspect the return code and print descriptive error messages using perror() or strerror() based on the value of errno.
 
