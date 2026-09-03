@@ -4,8 +4,8 @@
 
 This sample package demonstrates how to instrument kernel system call execution at 
 runtime without recompiling the Linux kernel. It consists of two components:
-  1. A Kernel Module (reboot_monitor.c) that attaches a return probe 
-     (kretprobe) to the sys_reboot kernel symbol.
+  1. A Kernel Module (reboot_monitor.c) that attaches a probe 
+     (kprobe) to the sys_reboot kernel symbol.
   2. A User-Space Client (reboot_test.c) that issues a raw system call to 
      trigger the kernel handler directly.
 
@@ -14,7 +14,7 @@ and how kernel modules can audit system call results using high-level kernel API
 
 ## KERNEL MODULE EXPLANATION (reboot_monitor.c)
 
-The module monitors the execution outcome of sys_reboot using the Linux kretprobe (Kernel Return Probes) tracing framework. A kretprobe is a dynamic tracing feature provided by the Linux kernel that lets developers inspect and instrument a function as it finishes executing and returns control back to its caller.
+The module monitors the execution outcome of sys_reboot using the Linux kprobe (Kernel Probes) tracing framework. A kprobe is a dynamic tracing feature provided by the Linux kernel that lets developers inspect and instrument a function as it finishes executing and returns control back to its caller.
 
 Key Mechanisms:
   - Architecture Target Abstraction:
@@ -24,12 +24,9 @@ Key Mechanisms:
     The module uses preprocessor directives (#if defined) to select the correct 
     symbol name automatically at compile time.
 
-  - Kretprobe Return Handler (reboot_ret_handler):
-    Runs immediately after sys_reboot finishes executing, right before control 
-    returns to user space.
-      - regs_return_value(regs): A portable kernel macro that extracts the 
-        syscall's return value from the CPU's return register without needing 
-        architecture-specific code.
+  - Kprobe Pre-Handler (reboot_pre_handler):
+    Runs immediately at the entry point of sys_reboot, right before any internal kernel validation or system call execution begins.
+      - pt_regs: A pointer to the structure containing saved CPU registers at the moment the system call was invoked. System call arguments are extracted directly from these registers.  
       - current: A pointer to the task_struct of the process that called the 
         system call.
       - current_uid(): Retrieves the user credential structure. __kuid_val() 
