@@ -52,7 +52,7 @@ static int reboot_pre_handler(struct kprobe *p, struct pt_regs *regs)
         pr_warn("[RebootMonitor] Security alert: Non-root user (UID %d) attempted reboot!\n", uid);
     }
 
-    return 0; /* Returning 0 allows sys_reboot execution to proceed */
+    return 0; /* Returning 0 allows sys_reboot execution to proceed: the kprobe pre-handler runs before sys_reboot executes. When the pre-handler finishes, returning 0 simply tells the tracing engine that we are done inspecting/modifying registers, and now the kernel should just go ahead and let the CPU jump into sys_reboot now. */
 }
 
 static struct kprobe my_kprobe = {
