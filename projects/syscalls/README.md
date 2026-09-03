@@ -64,7 +64,7 @@ unprivileged and root execution contexts:
   ```bash
   # sudo ./reboot_auth "WRONG_PASSPHRASE"
   ```
-  Expected Result: Fails with errno = EPERM (Operation not permitted). System stays up.
+  Expected Result: Fails with errno = EINVAL (Invalid argument). System stays up.
 
 - Test Case 3: Correct Passphrase
   ```bash
