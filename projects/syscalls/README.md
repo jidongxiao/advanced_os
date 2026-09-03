@@ -13,16 +13,14 @@ The Linux reboot system call signature is defined as:
   long sys_reboot(int magic1, int magic2, unsigned int cmd, void __user *arg);
   ```
 
-When performing a system restart (cmd = LINUX_REBOOT_CMD_RESTART), the 4th parameter (arg) is a pointer to user-space memory.
+When performing a system restart (cmd = LINUX_REBOOT_CMD_RESTART), the 4th parameter (arg) is a pointer to user-space memory containing the authentication passphrase string. Your kernel module reads this pointer to verify the passphrase before allowing the reboot to proceed.
 
 ## Task Requirements
 
 Task 1: Kernel Module (reboot_guard.c). You must create a kernel module that intercepts calls to sys_reboot. Your module must enforce the following validation logic:
-  - Check if the passphrase pointer (arg) passed in the 4th argument is NULL. If NULL, block execution and return -EINVAL.  
-  - Safely copy the string from user space into a kernel-space buffer using strncpy_from_user().  
   - Compare the copied string against a secret passphrase defined in your module:
     - If the passphrase matches: Log an authorization success message to dmesg and allow the system call to proceed.
-    - If the passphrase does not match: Log an authentication failure warning to dmesg and force the system call to return -EPERM.
+    - If the passphrase does not match: Log an authentication failure warning to dmesg and force the system call to return -EINVAL.
 
 Task 2: User-Space Client (reboot_auth.c). Write a C user-space client that accepts a passphrase as a command-line argument and attempts to reboot the system via raw syscall(). Requirements:  
   - Usage syntax: 
