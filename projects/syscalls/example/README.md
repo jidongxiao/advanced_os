@@ -14,8 +14,7 @@ and how kernel modules can audit system call results using high-level kernel API
 
 ## KERNEL MODULE EXPLANATION (reboot_monitor.c)
 
-The module monitors the execution outcome of sys_reboot using the Linux kretprobe
-tracing framework.
+The module monitors the execution outcome of sys_reboot using the Linux kretprobe (Kernel Return Probes) tracing framework. A kretprobe is a dynamic tracing feature provided by the Linux kernel that lets developers inspect and instrument a function as it finishes executing and returns control back to its caller.
 
 Key Mechanisms:
   - Architecture Target Abstraction:
