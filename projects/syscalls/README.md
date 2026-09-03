@@ -61,9 +61,9 @@ unprivileged and root execution contexts:
   ```
   Expected Result: Fails with errno = EPERM (Operation not permitted). System stays up.
 
-- Test Case 3: Correct Passphrase (Root Execution)
+- Test Case 3: Correct Passphrase
   ```bash
-  # sudo ./reboot_auth "Lake America"
+  # sudo ./reboot_auth "Correct Passphrase"
   ```
   Expected Result: Success. The kernel module logs success and system reboot proceeds.
 
