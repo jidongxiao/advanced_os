@@ -6,7 +6,7 @@ In this assignment, you will extend the Linux reboot system call mechanism to re
 
 You will implement a kernel module that intercepts system call execution, safely transfers memory across the user/kernel boundary, authenticates user credentials, and enforces security rules without modifying or recompiling the base kernel.
 
-## BACKGROUND & CORE CONCEPTS
+## Background & Core Concepts
 
 The Linux reboot system call signature is defined as:
   ```c
