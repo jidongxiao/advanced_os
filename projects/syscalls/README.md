@@ -1,6 +1,6 @@
 # Programming Assignment: Authenticated Reboot System Call Guard
 
-## OBJECTIVE
+## Objective
 
 In this assignment, you will extend the Linux reboot system call mechanism to require a mandatory, dynamic "passphrase" string before allowing an OS reboot. 
 
@@ -24,7 +24,7 @@ Key Concepts Tested:
   - Return Value Conventions: Returning standard Linux error codes (-EPERM, 
     -EINVAL, -EFAULT) to user space upon authentication or validation failure.
 
-## TASK REQUIREMENTS
+## Task Requirements
 
 Task 1: Kernel Module (reboot_guard.c). You must create a kernel module that intercepts calls to sys_reboot. Your module must enforce the following validation logic:
   - Check if the passphrase pointer (arg) passed in the 4th argument is NULL. If NULL, block execution and return -EINVAL.  
@@ -49,7 +49,7 @@ Task 2: User-Space Client (reboot_auth.c). Write a C user-space client that acce
 
 - You can read the story [here](magic.md) if you want to find out the meaning of the magic numbers.
 
-## GRADING & TEST CASES
+## Test Cases
 
 Your submission will be evaluated against three distinct test scenarios on both 
 unprivileged and root execution contexts:
@@ -72,7 +72,7 @@ unprivileged and root execution contexts:
   ```
   Expected Result: Success. The kernel module logs success and system reboot proceeds.
 
-## DELIVERABLES
+## Submission
 
 Submit the following files on Submitty:
   1. reboot_guard.c  — Source code for your kernel module.
@@ -80,6 +80,6 @@ Submit the following files on Submitty:
   3. Makefile        — Build script that compiles both targets via 'make'.
   4. README.txt      — Brief description of your implementation, your chosen correct passphrase, and your test results for each of the 3 test cases.
 
-## DUE DATE
+## Due Date
 
 09/21/2026, 11:59pm.
