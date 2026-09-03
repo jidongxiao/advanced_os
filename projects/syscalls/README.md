@@ -18,7 +18,7 @@ When performing a system restart (cmd = LINUX_REBOOT_CMD_RESTART), the 4th param
 Key Concepts Tested:
   - User/Kernel Boundary Safety: User-space memory pointers (void __user *) 
     cannot be dereferenced directly in kernel code. You must use safe kernel 
-    copy routines such as copy_from_user().
+    copy routines such as strncpy_from_user().
   - System Call Interception: Using kernel dynamic tracing mechanisms to 
     inspect and validate arguments before a system call executes.
   - Return Value Conventions: Returning standard Linux error codes (-EPERM, 
@@ -28,8 +28,7 @@ Key Concepts Tested:
 
 Task 1: Kernel Module (reboot_guard.c). You must create a kernel module that intercepts calls to sys_reboot. Your module must enforce the following validation logic:
   - Check if the passphrase pointer (arg) passed in the 4th argument is NULL. If NULL, block execution and return -EINVAL.  
-  - Safely copy the string from user space into a kernel-space buffer using copy_from_user().  
-  - If copy_from_user() fails (returns a negative value), block execution and return -EFAULT.  
+  - Safely copy the string from user space into a kernel-space buffer using strncpy_from_user().  
   - Compare the copied string against a secret passphrase defined in your module:
     - If the passphrase matches: Log an authorization success message to dmesg and allow the system call to proceed.
     - If the passphrase does not match: Log an authentication failure warning to dmesg and force the system call to return -EPERM.
@@ -42,6 +41,16 @@ Task 2: User-Space Client (reboot_auth.c). Write a C user-space client that acce
 
   - If no passphrase argument is provided on the command line, pass NULL as the 4th argument to syscall().  
   - Inspect the return code and print descriptive error messages using perror() or strerror() based on the value of errno.
+
+**Note**: In this assignment, you are recommended to use strncpy_from_user() instead of copy_from_user(). These two functions are similar. Use copy_from_user() for fixed-size C structures or primitive data types (e.g., int, struct foo). Use strncpy_from_user() for null-terminated strings, because it safely stops at \0 without over-reading user memory. Here are the prototype of these two functions:
+
+```c
+/* Standard memory copy for raw data / structs */
+unsigned long copy_from_user(void *to, const void __user *from, unsigned long n);
+
+/* Bounded string copy for null-terminated C-strings */
+long strncpy_from_user(char *dst, const char __user *src, long count);
+```
 
 ## Example Program and the Magic Number Story
 
@@ -58,13 +67,13 @@ unprivileged and root execution contexts:
   ```bash
   # sudo ./reboot_auth
   ```
-  Expected Result: Fails with errno = EINVAL (Invalid argument). System stays up.
+  Expected Result: Fails. System stays up.
 
 - Test Case 2: Incorrect Passphrase
   ```bash
   # sudo ./reboot_auth "WRONG_PASSPHRASE"
   ```
-  Expected Result: Fails with errno = EINVAL (Invalid argument). System stays up.
+  Expected Result: Fails. System stays up.
 
 - Test Case 3: Correct Passphrase
   ```bash
