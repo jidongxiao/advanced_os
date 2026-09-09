@@ -191,16 +191,22 @@ $ make clean
 
 ## Submission
 
-Submit screenshots demonstrating the three required observations below.
+Submit screenshots demonstrating the required observations below.
 
-- Screenshot 1: /proc/kernel_memory_address showing the exposed kernel address.
+You may submit three separate screenshots, one for each observation, or one screenshot showing all three observations.
 
-- Screenshot 2: ./user_read showing the segmentation fault.
+It is okay to use just one screenshot if it clearly shows:
 
-- Screenshot 3: sudo dmesg | tail -n 5 showing the kernel module (kernel_read.ko) successfully reading the same address and printing the expected value.
+- The exposed kernel address from /proc/kernel_memory_address.
 
-**Note**, it is okay if you use just one screenshot which shows all of the above 3 observations. Here is an example screenshot which demonstrates all 3 observations.
+- The user_read program attempting to access the address and terminating with a segmentation fault.
+
+- The kernel_read module successfully reading the same address and value in the dmesg log.
+
+Here is an example screenshot showing all three observations:
 
 ![Example showing all three observations](kmem_example.png)
+
+Make sure that your submitted screenshot(s) clearly show the commands and their corresponding outputs.
 
 Due Date: 09/17/2026, 11:59pm. Each lab has a maximum of 5 points. Late submissions will be accepted within 3 days after the deadline, with a 1-point penalty applied to the earned grade.
