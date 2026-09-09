@@ -201,4 +201,6 @@ Submit screenshots demonstrating the three required observations below.
 
 **Note**, it is okay if you use just one screenshot which shows all of the above 3 observations. Here is an example screenshot which demonstrates all 3 observations.
 
+![Example showing all three observations](kmem_example.png)
+
 Due Date: 09/17/2026, 11:59pm. Each lab has a maximum of 5 points. Late submissions will be accepted within 3 days after the deadline, with a 1-point penalty applied to the earned grade.
