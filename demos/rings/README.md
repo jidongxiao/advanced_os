@@ -1,6 +1,8 @@
 # Ring 0 and Ring 3 Demo
 
-This demo shows the difference between **user mode (Ring 3)** and **kernel mode (Ring 0)** on an x86-64 Linux system.
+This demo shows the difference between **user mode (Ring 3)** and **kernel mode (Ring 0)** on an x86-64 Linux system. The diagram below illustrates the privilege levels, or rings, used by x86 and x86_64 processors:
+
+![Privilege rings for the x86 processors](x86_rings.png)
 
 The CPU keeps track of the privilege level of the code currently executing. This is called the **Current Privilege Level (CPL)**.
 
