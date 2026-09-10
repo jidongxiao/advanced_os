@@ -140,10 +140,6 @@ The exact CPU percentages will depend on your machine.
 
 ### Question 3
 
-What are the nice values of the two processes?
-
-### Question 4
-
 How is the CPU time divided between the two processes?
 
 Do not worry if the values are not exactly equal.
@@ -192,14 +188,9 @@ Wait a few seconds and run the command again:
 ps -p $PID1,$PID2 -o pid,ni,pcpu,stat,comm
 ```
 
-Record your observations.
+Take a screenshot (Screenshot 1) of this command and its output, making sure that both processes, their nice values, and their CPU usage are clearly visible.
 
-| Process | Nice | CPU % |
-| ------- | ---: | ----: |
-| PID1    |    0 |       |
-| PID2    |   10 |       |
-
-### Question 5
+### Question 4
 
 Which process receives more CPU time?
 
@@ -235,14 +226,9 @@ Wait several seconds and check again.
 ps -p $PID3,$PID4 -o pid,ni,pcpu,stat,comm
 ```
 
-Record your observations.
+Take a screenshot (Screenshot 2) of this command and its output, making sure that both processes, their nice values, and their CPU usage are clearly visible.
 
-| Process | Nice | CPU % |
-| ------- | ---: | ----: |
-| PID3    |    0 |       |
-| PID4    |   19 |       |
-
-### Question 6
+### Question 5
 
 Compare this experiment with Part 3.
 
@@ -317,3 +303,15 @@ In this lab, you experimentally observed that:
 4. A lower nice value gives a process greater scheduling preference.
 5. A higher nice value gives a process lower scheduling preference.
 6. Nice values affect **relative CPU scheduling**, not a fixed CPU percentage.
+
+# Submission
+
+Submit the following three files on Submitty:
+
+Screenshot 1 — Your observation from the experiment in part 3.
+Screenshot 2 — Your observation from the experiment in part 4.
+TXT file — Your answers to the five lab questions.
+
+Make sure that both screenshots clearly show the relevant command and its output.
+
+Due Date: 09/21/2026, 11:59pm. Each lab has a maximum of 5 points. Late submissions will be accepted within 3 days after the deadline, with a 1-point penalty applied to the earned grade.
