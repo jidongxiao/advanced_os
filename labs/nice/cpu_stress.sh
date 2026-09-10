@@ -5,7 +5,7 @@
 # Default runtime in seconds
 RUNTIME=${1:-100}
 
-echo "Starting CPU-intensive task for $RUNTIME seconds..."
+# echo "Starting CPU-intensive task for $RUNTIME seconds..."
 START=$(date +%s)
 
 while true; do
