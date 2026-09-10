@@ -40,7 +40,7 @@ Importantly, the nice value does **not** specify a fixed percentage of CPU time.
 
 ## Provided Program
 
-You are provided with:
+You are provided with the bash script [cpu_stress.sh](cpu_stress.sh):
 
 ```text
 cpu_stress.sh
@@ -203,10 +203,6 @@ Record your observations.
 
 Which process receives more CPU time?
 
-### Question 6
-
-Why does changing the nice value affect the CPU time received by the processes?
-
 ---
 
 # Part 4: Increase the Difference
@@ -246,130 +242,11 @@ Record your observations.
 | PID3    |    0 |       |
 | PID4    |   19 |       |
 
-### Question 7
+### Question 6
 
 Compare this experiment with Part 3.
 
 What happens when the difference between the nice values becomes larger?
-
----
-
-# Part 5: Observe with `top`
-
-Run:
-
-```bash
-top
-```
-
-Find your `cpu_stress.sh` processes.
-
-Pay particular attention to:
-
-```text
-NI
-%CPU
-```
-
-You can leave `top` running while observing the processes for several seconds.
-
-### Question 8
-
-What does the `NI` column represent?
-
-### Question 9
-
-Why might the `%CPU` values fluctuate from one observation to another?
-
----
-
-# Part 6: Understand CPU Cores
-
-The experiments above depend on how many CPU cores are available.
-
-Check the number of logical CPUs:
-
-```bash
-nproc
-```
-
-For example:
-
-```text
-4
-```
-
-means that the system has four logical CPUs available.
-
-### Question 10
-
-Suppose a machine has four logical CPUs and only two CPU-bound processes are running.
-
-Can both processes show close to:
-
-```text
-100% CPU
-```
-
-at the same time?
-
-Explain why.
-
----
-
-# Part 7: Final Experiment
-
-Run several CPU-bound processes:
-
-```bash
-./cpu_stress.sh 120 &
-PID5=$!
-
-./cpu_stress.sh 120 &
-PID6=$!
-
-./cpu_stress.sh 120 &
-PID7=$!
-```
-
-Initially, all three processes have:
-
-```text
-NI = 0
-```
-
-Check them:
-
-```bash
-ps -p $PID5,$PID6,$PID7 -o pid,ni,pcpu,stat,comm
-```
-
-Now change their nice values:
-
-```bash
-renice 5 -p $PID6
-renice 10 -p $PID7
-```
-
-Check again:
-
-```bash
-ps -p $PID5,$PID6,$PID7 -o pid,ni,pcpu,stat,comm
-```
-
-Observe the processes for at least 10 seconds.
-
-### Question 11
-
-Rank the three processes from the one receiving the greatest scheduling preference to the least scheduling preference.
-
-Use their nice values to explain your answer.
-
-### Question 12
-
-Does the process with the lowest nice value always have exactly the highest `%CPU` at every instant?
-
-Explain why or why not.
 
 ---
 
@@ -440,4 +317,3 @@ In this lab, you experimentally observed that:
 4. A lower nice value gives a process greater scheduling preference.
 5. A higher nice value gives a process lower scheduling preference.
 6. Nice values affect **relative CPU scheduling**, not a fixed CPU percentage.
-7. The observed CPU usage also depends on the number of CPUs and other activity on the system.
