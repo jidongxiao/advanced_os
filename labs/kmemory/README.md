@@ -191,7 +191,7 @@ $ make clean
 
 ## Submission
 
-Submit screenshots demonstrating the required observations below.
+Submit screenshots (on Submitty) demonstrating the required observations below.
 
 You may submit three separate screenshots, one for each observation, or one screenshot showing all three observations.
 
