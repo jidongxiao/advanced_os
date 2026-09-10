@@ -130,3 +130,48 @@ User program
 This privilege separation is fundamental to operating systems. User programs run with restricted privileges, while the kernel runs with the higher privileges needed to manage protected resources such as memory, hardware, and other system resources.
 
 The **CS register** provides the CPU with information about the currently executing code and its privilege level. By examining its lower two bits, we can observe the CPL directly in this experiment.
+
+## AArch64 Equivalent
+
+This demo uses **x86-64 terminology**, where the privilege levels are called **rings**.
+
+AArch64 uses different terminology. Instead of Ring 0 and Ring 3, ARM processors use **Exception Levels (EL)**:
+
+```text
+x86-64                         AArch64
+
+Ring 3                         EL0
+User programs                  User programs
+    │                              │
+    │ privilege transition         │ exception
+    ▼                              ▼
+Ring 0                         EL1
+OS kernel                      OS kernel
+```
+
+The correspondence is:
+
+| x86-64 | AArch64 | Typical use                 |
+| ------ | ------- | --------------------------- |
+| Ring 3 | **EL0** | User programs               |
+| Ring 0 | **EL1** | Operating-system kernel     |
+| —      | **EL2** | Hypervisor / virtualization |
+| —      | **EL3** | Secure monitor / firmware   |
+
+**EL** stands for **Exception Level**. The terminology reflects ARM's exception-handling model: transitions between privilege levels commonly occur when the processor handles exceptions, such as system calls, interrupts, or faults.
+
+Therefore, although this demo directly examines **CPL** on x86-64, the same fundamental idea applies to AArch64:
+
+```text
+        x86-64                    AArch64
+
+      Ring 3                      EL0
+   User programs              User programs
+         │                         │
+         │                         │
+         ▼                         ▼
+   Ring 0                      EL1
+     Kernel                    Kernel
+```
+
+The architecture uses different mechanisms and terminology, but both provide a hardware-enforced separation between **less-privileged user code** and **more-privileged kernel code**.
