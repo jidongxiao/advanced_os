@@ -118,8 +118,8 @@ What does the `%CPU` value tell you about this process?
 Start two instances of the program:
 
 ```bash
-./cpu_stress.sh 60 &
-./cpu_stress.sh 60 &
+taskset -c 0 ./cpu_stress.sh 60 &
+taskset -c 0 ./cpu_stress.sh 60 &
 ```
 
 Find both processes:
@@ -155,10 +155,10 @@ Do not worry if the values are not exactly equal.
 Start two new CPU-bound processes:
 
 ```bash
-./cpu_stress.sh 90 &
+taskset -c 0 ./cpu_stress.sh 90 &
 PID1=$!
 
-./cpu_stress.sh 90 &
+taskset -c 0 ./cpu_stress.sh 90 &
 PID2=$!
 ```
 
@@ -210,10 +210,10 @@ Which process receives more CPU time?
 Start two more CPU-bound processes:
 
 ```bash
-./cpu_stress.sh 90 &
+taskset -c 0 ./cpu_stress.sh 90 &
 PID3=$!
 
-./cpu_stress.sh 90 &
+taskset -c 0 ./cpu_stress.sh 90 &
 PID4=$!
 ```
 
