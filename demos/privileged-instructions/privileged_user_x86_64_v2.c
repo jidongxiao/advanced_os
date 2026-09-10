@@ -35,10 +35,18 @@ int main(void)
      */
     struct sigaction sa;
 
+    // Specify the function that will be called when SIGSEGV occurs.
     sa.sa_sigaction = sigsegv_handler;
+    // Initialize the signal mask to empty:
+    // do not block any additional signals while the handler runs.
     sigemptyset(&sa.sa_mask);
+
+    // the handler will use the extended three-argument interface
     sa.sa_flags = SA_SIGINFO;
 
+    // Install the SIGSEGV handler.
+    // From now on, when this process receives SIGSEGV,
+    // sigsegv_handler() will be called instead of the default action.
     if (sigaction(SIGSEGV, &sa, NULL) == -1) {
         perror("sigaction");
         return 1;
