@@ -14,7 +14,7 @@ static int child_fn()
     // The child is the first process created in the new PID namespace.
     // Therefore, it is assigned PID 1 inside that namespace.
     // But what is the parent ID?
-    printf("PID: %ld\n", (long)getppid());
+    printf("Parent PID: %ld\n", (long)getppid());
     return 0;
 }
 
