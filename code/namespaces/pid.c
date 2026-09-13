@@ -28,6 +28,13 @@ int main()
      * child_stack + 1048576:
      *     Top of the 1 MB stack provided for the child.
      *
+     *     We pass the TOP of the stack because stacks on
+     *     architectures such as x86-64 grow downward.
+     *
+     *     This is different from fork(): fork() hides the
+     *     stack setup from us, while this clone() interface
+     *     expects us to provide the child's stack.
+     *
      * CLONE_NEWPID:
      *     Put the child into a new PID namespace.
      *
@@ -49,6 +56,17 @@ int main()
         CLONE_NEWPID | SIGCHLD,
         NULL
     );
+
+    /*
+     * CLONE_NEWPID is a privileged operation.
+     *
+     * If the program is run by an ordinary user without the
+     * required privilege, clone() fails and returns -1.
+     */
+    if (child_pid == -1) {
+        perror("clone");
+        return 1;
+    }
 
     /*
      * clone() returns the child's PID as seen from the
