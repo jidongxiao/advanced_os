@@ -1,4 +1,4 @@
-# Lab 3: Exploring Process Scheduling with `nice`
+# Lab: Exploring Process Scheduling with `nice`
 
 ## Objective
 
