@@ -1,5 +1,15 @@
 # Linux User Namespaces
 
+## User Namespace
+
+A **user namespace** is a Linux isolation mechanism that allows a process to have its own set of user and group IDs, separate from those on the host.
+
+A process can therefore be assigned **UID 0 (root)** inside the namespace while being mapped to an ordinary, unprivileged UID on the host.
+
+![Linux user namespace](user_namespace.webp)
+
+User namespaces also provide the process with **capabilities scoped to that namespace**. These capabilities can allow operations that normally require root, but they do not give the process unrestricted root privileges on the host. The kernel maintains the mapping between the namespace's UIDs and the host's UIDs. Thus, "root" inside a user namespace is not the same as root on the host.
+
 ## Objective
 
 This demo illustrates how a Linux user namespace changes the identity and capabilities of a process without giving it root privileges on the host.
@@ -125,9 +135,7 @@ You are back to your original UID:
 uid=1000(...)
 ```
 
-## Files
-
-Key Observation
+# Key Observation
 
 A user namespace creates a different identity and capability context for a process:
 
