@@ -44,45 +44,39 @@ Extra Credit: +0.3% added to final course grade for the winning team.
 
 ### Examples
 
-#### Example 1: Bribe-Based Priority Scheduler
+### Example 1: Taylor Swift Context Switch Scheduler
 
-- Absurd Rule: A process can buy CPU time slices by transferring virtual memory pages or file descriptors back to the kernel.
+- Absurd Rule: Every time the kernel performs a context switch, the user must listen to a Taylor Swift song. The next context switch cannot occur until the song finishes. Each task is associated with a specific Taylor Swift song, and more popular songs receive higher scheduling priority.
 
 - Kernel Data Structures:
 
-task_struct: Add a bribe_credits counter field.
-
-runqueue: Replace the standard red-black tree with a bribe_priority_queue sorted by bribe_credits.
+  - task_struct: Add an int song_id to associate each task with a specific Taylor Swift song.
+  - runqueue: Organize runnable tasks according to the popularity of their associated song, giving higher priority to tasks associated with more popular songs.
 
 - Scheduler Operations:
+  - pick_next_task(): Selects the runnable task whose associated Taylor Swift song has the highest popularity.
+  - schedule(): When switching from one task to another task, starts the selected task's Taylor Swift song and delays the context switch until the song finishes.
+  - context_switch(): If the current task is the music player, allow it to continue running until the song finishes. Otherwise, the context switch cannot proceed until the required song has finished.
 
-pick_next_task(): Always selects the process with the highest bribe_credits.
+- Helpful Scenario: Gives the user an opportunity to listen to more Taylor Swift songs while the operating system is running.
 
-scheduler_tick(): Decrements bribe_credits on every clock interrupt. If bribe_credits == 0, the thread drops to the lowest priority runqueue.
-
-yield() / system call: A new system call sys_bribe(void *addr) allows a process to surrender a physical memory page in exchange for 100 extra scheduling quantum ticks.
-
-- Helpful Scenario: High-priority real-time processes can dynamically "trade" unused heap space to guarantee sub-millisecond latency during sudden traffic spikes.
-
-- Drawback: Memory-starved tasks will experience absolute CPU starvation, eventually causing system-wide deadlocks.
+- Drawback: A system with frequent context switches could take an extremely long time to make progress.
 
 #### Example 2: The "Decibel-Demanding" Screaming Scheduler
 
-- Absurd Rule: CPU clock frequency and time-slice allocation are directly scaled by how loudly the system administrator is screaming into the microphone. Silence results in immediate context-switching to idle.
+- Absurd Rule: Time-slice allocation is directly scaled by how loudly the user is screaming into the microphone. The louder the user screams, the larger the time slice given to the next process. If the user is silent, the time slice becomes almost zero.
 
 - Kernel Data Structures:
 
-task_struct: Stores a decibel_budget decremented on every tick.
-
-runqueue: Organized as a decibel-sorted priority min-heap.
+  - task_struct: Add a decibel_level field to record the sound level associated with the task.
+  - runqueue: Organize runnable tasks according to their decibel_level, giving preference to tasks with higher values.
 
 - Scheduler Operations:
 
-pick_next_task(): Queries the sound card’s DMA buffer for real-time RMS audio levels. If input volume is below 85 dB, pick_next_task() refuses to return any user process and forces CPU core sleep states.
+  - pick_next_task(): Selects the runnable task with the highest decibel_level.
+  - scheduler_tick(): Measures the user's current screaming volume and adjusts the selected task's time slice accordingly. Louder screaming results in a larger time slice.
 
-context_switch(): Higher pitch and volume increase the time-slice quantum from 1 ms to 100 ms.
-
-- Helpful Scenario: Prevents sysadmins from falling asleep during overnight emergency server outages.
+- Helpful Scenario: Prevents sysadmins from falling asleep during night shifts.
 
 - Drawback: Causes permanent vocal cord damage for long-running batch jobs or kernel builds.
 
