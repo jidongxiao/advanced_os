@@ -44,7 +44,7 @@ Extra Credit: +0.3% added to final course grade for the winning team.
 
 ### Examples
 
-### Example 1: Taylor Swift Context Switch Scheduler
+#### Example 1: Taylor Swift Context Switch Scheduler
 
 - Absurd Rule: Every time the kernel performs a context switch, the user must listen to a Taylor Swift song. The next context switch cannot occur until the song finishes. Each task is associated with a specific Taylor Swift song, and more popular songs receive higher scheduling priority.
 
