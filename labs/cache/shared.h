@@ -1,11 +1,9 @@
 #ifndef SHARED_H
 #define SHARED_H
 
-#include <stdint.h>
-
-#define SHM_NAME "/cache_lab_shm"
-#define ARRAY_SIZE 256
-#define STRIDE 64
-#define SHM_SIZE (ARRAY_SIZE * STRIDE)
+#define SHM_NAME "/flush_reload_shm"
+#define STRIDE 4096
+#define NUM_ELEMENTS 256
+#define SHM_SIZE (NUM_ELEMENTS * STRIDE)
 
 #endif

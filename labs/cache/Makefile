@@ -2,14 +2,14 @@ CC = gcc
 CFLAGS = -O2 -march=native -Wall -Wextra
 LDFLAGS = -lrt
 
-TARGETS = attacker victim
+TARGETS = victim attacker
 
 all: $(TARGETS)
 
-attacker: attacker.c
-	$(CC) $(CFLAGS) $< -o $@
+victim: victim.c shared.h
+	$(CC) $(CFLAGS) $< -o $@ $(LDFLAGS)
 
-victim: victim.c
+attacker: attacker.c shared.h
 	$(CC) $(CFLAGS) $< -o $@ $(LDFLAGS)
 
 clean:
