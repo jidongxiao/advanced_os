@@ -47,34 +47,13 @@ Your load balancer runs periodically in process context (via `work_struct`). It 
 
 1. **Distinct Core Selection (`max_cpu != min_cpu`):** The target destination core must differ from the source core.
 2. **Hysteresis Threshold (`max_tickets - min_tickets > 50`):** The ticket differential between the heaviest and lightest cores must strictly exceed **50 tickets**. This creates a deadband that avoids unnecessary context switches for negligible load differences.
-3. **Anti-Thrashing / Overshoot Prevention:**
-   $$\text{dst\_tickets} + \text{task\_tickets} \le \text{src\_tickets} - \text{task\_tickets} + 20$$
-   You must iterate through the source queue to find a candidate task that does not cause the destination queue to overshoot the source queue (allowing a 20-ticket tolerance margin).
-4. **Valid Task Pointer:** A candidate task node must exist, and its corresponding `struct task_struct *` must be pinned safely with `get_task_struct()`.
+3. **Anti-Thrashing / Overshoot Prevention:** Before migrating a candidate task, verify that moving its ticket weight will **not** cause the destination core to become heavier than the source core (allowing a small 20-ticket tolerance buffer). This rule prevents the load balancer from making things worse when trying to balance two CPU cores. If you blindly move the first process you find from an overloaded core to an underloaded core, you might end up shifting too much weight, making the destination core heavier than the source core. This causes the two cores to ping-pong the task back and forth endlessly—a performance-destroying bug known as **thrashing**.
 
----
+| **Candidate Task**  | **Load Before Migration**                | **Load After Migration**                 | **Formula Evaluation: `dst_new <= src_new + 20`**                   | **Verdict & Explanation**                                                                                                          |
+| ------------------- | ---------------------------------------- | ---------------------------------------- | ------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
+| **100-Ticket Task** | **CPU 1:** 320 tix<br>**CPU 0:** 200 tix | **CPU 1:** 220 tix<br>**CPU 0:** 300 tix | `(200 + 100) <= (320 - 100 + 20)`<br><br>⟹ `300 <= 240` (**FALSE**) | ❌ **NOT OK (Skip)**<br><br>Flips the imbalance (CPU 0 jumps from lightest to heaviest). Causes immediate ping-ponging (thrashing). |
+| **30-Ticket Task**  | **CPU 1:** 320 tix<br>**CPU 0:** 200 tix | **CPU 1:** 290 tix<br>**CPU 0:** 230 tix | `(200 + 30) <= (320 - 30 + 20)`<br><br>⟹ `230 <= 310` (**TRUE**)    | ✅ **OK (Migrate)**<br><br>Brings both cores significantly closer to equilibrium without overshooting or flipping load ownership.   |
 
-## Important Kernel Implementation Pitfalls
-
-> ⚠️ **CRITICAL WARNINGS:**
-> 
-> 1. **Never call sleeping functions while holding a spinlock!**
->    Functions like `set_cpus_allowed_ptr()` sleep while waiting for task migration completion. Calling them inside a `spin_lock_irq()` critical section will cause an immediate `BUG: scheduling while atomic` kernel panic. You **must drop all spinlocks** before invoking `set_cpus_allowed_ptr()`.
->
-> 2. **Prevent AB-BA Lock Inversion Deadlocks:**
->    When locking two per-CPU queues during migration, always acquire locks in ascending order of CPU indices:
->    ```c
->    if (max_cpu < min_cpu) {
->        spin_lock_irqsave(&src_q->lock, flags1);
->        spin_lock_irqsave_nested(&dst_q->lock, flags2, SINGLE_DEPTH_NESTING);
->    } else {
->        spin_lock_irqsave(&dst_q->lock, flags1);
->        spin_lock_irqsave_nested(&src_q->lock, flags2, SINGLE_DEPTH_NESTING);
->    }
->    ```
->
-> 3. **Pin Task References Across Migration:**
->    To prevent a Use-After-Free (UAF) if a task unregisters while being migrated, acquire a reference using `get_task_struct(p)` while holding the queue lock, and drop it with `put_task_struct(p)` after `set_cpus_allowed_ptr()` finishes.
 
 ---
 
