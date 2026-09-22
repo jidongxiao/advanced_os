@@ -88,8 +88,8 @@ static int __init demo_init(void)
 
     INIT_WORK(&toggle_work, toggle_work_func);
 
-    /* Toggle state every 1 second (1000 ms) */
-    kt_interval = ktime_set(1, 0);
+    /* Toggle state every 5 second (5000 ms) */
+    kt_interval = ktime_set(5, 0);
 
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 14, 0)
     hrtimer_setup(&toggle_timer, toggle_timer_tick, CLOCK_MONOTONIC, HRTIMER_MODE_REL);
