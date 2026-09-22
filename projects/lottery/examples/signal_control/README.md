@@ -21,13 +21,13 @@ make
 Run target_app in the background (or in a separate terminal) and take note of its PID:
 
 ```bash
-./target_app &
+./target_app
 # Example output: [TARGET] Running with PID: 12345
 ```
 
 ### 3. Load the Module with target_pid
 
-Insert the module, passing the PID of target_app via the required target_pid parameter:
+In a separate terminal, insert the module, passing the PID of target_app via the required target_pid parameter:
 
 ```bash
 sudo insmod signal_control_demo.ko target_pid=12345
