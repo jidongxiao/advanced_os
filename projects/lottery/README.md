@@ -18,32 +18,9 @@ Lottery scheduling is a randomized, proportional-share resource allocation algor
 
 ---
 
-## System Architecture & Flow
-
-User Space                     Kernel Space (/dev/lottery)
-+------------+   ioctl()    +------------------------------------+
-|  app.c     | -----------> | lottery_ioctl()                   |
-|  (Workers) |              |  - LOTTERY_REGISTER                |
-+------------+              |  - LOTTERY_UNREGISTER              |
-+------------------------------------+
-|
-Per-CPU Queues
-+------------------+   +------------------+
-| CPU 0 Queue      |   | CPU 1 Queue      |
-| - total_tickets  |   | - total_tickets  |
-| - task_list      |   | - task_list      |
-+------------------+   +------------------+
-^                 ^
-|   Workqueue     |
-+-----------------+
-balance_cpu_loads()
-lottery_sched_work_func()
-
----
-
 ## Migration Criteria & Load Balancing Rules
 
-Your load balancer runs periodically in process context (via `work_struct`). It must evaluate per-CPU queues and migrate tasks from the heaviest CPU core (`max_cpu`) to the lightest core (`min_cpu`) **only when all four of the following criteria are met simultaneously**:
+Your load balancer runs periodically in process context (via `work_struct`). It must evaluate per-CPU queues and migrate tasks from the heaviest CPU core (`max_cpu`) to the lightest core (`min_cpu`) **only when all three of the following criteria are met simultaneously**:
 
 1. **Distinct Core Selection (`max_cpu != min_cpu`):** The target destination core must differ from the source core.
 2. **Hysteresis Threshold (`max_tickets - min_tickets > 50`):** The ticket differential between the heaviest and lightest cores must strictly exceed **50 tickets**. This creates a deadband that avoids unnecessary context switches for negligible load differences. Examples: 
@@ -64,6 +41,54 @@ Your load balancer runs periodically in process context (via `work_struct`). It 
 
 
 ---
+
+## Harness File Descriptions & Kernel Requirements
+
+You are provided with `app.c`, `run_lottery.sh`, `Makefile`, and `lottery.h`. You must implement `lottery.c` to fulfill the expectations of these user-space components.
+
+### What `app.c` Does:
+
+* **Opens the Character Device:** Opens `/dev/lottery` with `O_RDWR`.
+* **Registers with the Kernel:** Fills a `struct lottery_struct` with its PID and ticket count, then invokes the `LOTTERY_REGISTER` `ioctl`.
+* **Executes CPU Work:** Calculates the $n$-th Lucas number (`lucas(47)`) recursively to generate continuous CPU load.
+* **Measures Wall-Clock Execution:** Tracks start and end times in milliseconds using `gettimeofday()`.
+* **Unregisters from the Kernel:** Sends the `LOTTERY_UNREGISTER` `ioctl` upon completing its calculation and closes `/dev/lottery`.
+
+### Kernel Requirements for `app.c`:
+
+* **Character Device (`/dev/lottery`):** Must be created as a character misc device upon module loading (`insmod`).
+* **`LOTTERY_REGISTER` ioctl:**
+  * Receives `struct lottery_struct { unsigned long pid; unsigned long tickets; }`.
+  * Creates a new `struct lottery_task` entry.
+  * Places the process onto the lightest per-CPU queue (`total_tickets` basis).
+  * Binds the process to that core using `set_cpus_allowed_ptr()`.
+* **`LOTTERY_UNREGISTER` ioctl:**
+  * Removes the process from its assigned per-CPU queue.
+  * Deducts its tickets from `total_tickets` and decrements `task_count`.
+  * Frees the associated `struct lottery_task` memory.
+
+---
+
+### 2. Automated Test Harness (`run_lottery.sh`)
+
+`run_lottery.sh` automates the entire multi-core experiment lifecycle and parses kernel logs for grading metrics.
+
+#### Execution Pipeline:
+1. **Privilege & Build Check:** Verifies root privileges (`sudo`), compiles the code via `make`, and loads `lottery.ko`.
+2. **Device Permission Grant:** Sets device permissions (`chmod 666 /dev/lottery`) so worker tasks can issue `ioctl` calls.
+3. **Task Spawning:** Launches 20 parallel worker processes in the background with ticket weights ranging from 10 to 200:
+   * **10 tickets:** 5 tasks
+   * **30 tickets:** 5 tasks
+   * **60 tickets:** 5 tasks
+   * **100 tickets:** 2 tasks
+   * **150 tickets:** 2 tasks
+   * **200 tickets:** 1 task
+4. **Registration Settle Phase:** Pauses for 3 seconds (`sleep 3`) to allow all 20 processes to register and bind to initial cores, then flushes pre-existing kernel logs (`dmesg -c`).
+5. **Steady-State Monitoring:** Uses `wait` to block until all 20 background processes complete, recording total wall-clock execution time.
+6. **Log Extraction & Cleanup:** Parses kernel ring buffer output for status snapshots and migration events before unloading `lottery.ko`.
+
+#### Kernel Log Formatting Requirements for `run_lottery.sh`:
+To ensure the test script can extract evaluation metrics, your kernel module must emit `pr_info()` logs formatted as follows:
 
 ## What You Need to Implement
 
@@ -87,6 +112,7 @@ struct lottery_cpu_queue {
     unsigned long total_tickets;
     unsigned int task_count;
 };
+```
 
 # Required Functions
 
