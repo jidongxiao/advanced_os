@@ -278,3 +278,24 @@ Submit the following files on Submitty:
 ## Due Date
 
 10/08/2026, 11:59pm.
+
+## APIs
+
+The instructor solution used the following APIs:
+
+### `alloc_percpu`
+
+```c
+#include <linux/percpu.h>
+
+void __percpu *alloc_percpu(type);
+void free_percpu(void __percpu *ptr);
+```
+
+Description: 
+
+- alloc_percpu dynamically allocates an instance of the specified data type for every online CPU core. Each core interacts with its own independent memory region, eliminating cache-line bouncing and global lock contention.
+
+- free_percpu releases the per-CPU memory array previously allocated by alloc_percpu.
+
+Here is an [example kernel module](example/percpu) using these two functions.
