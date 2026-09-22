@@ -35,10 +35,10 @@ sudo insmod signal_control_demo.ko target_pid=12345
 
 ### 4. Observe Process Toggling
 
-Check dmesg output to observe the module alternating between sending SIGSTOP and SIGCONT every second:
+Check dmesg output to observe the module alternating between sending SIGSTOP and SIGCONT every 5 seconds:
 
 ```bash
-dmesg -w
+sudo dmesg -w
 ```
 
 You will also see target_app output freeze when paused (SIGSTOP) and resume printing when unblocked (SIGCONT).
