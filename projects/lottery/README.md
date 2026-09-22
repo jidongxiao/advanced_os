@@ -267,3 +267,14 @@ Done.
 >
 > 1. **Proportional Execution Scaling (Lottery Properties):** High-weight tasks (200, 150 tix) must complete significantly faster than medium-weight tasks (100, 60 tix), which in turn must finish before low-weight tasks (30, 10 tix).
 > 2. **Dynamic Load Balancing:** Per-CPU ticket counts must stay relatively balanced across cores during steady state, and task migrations must trigger automatically whenever a core becomes underloaded (e.g., after a heavy task finishes) in accordance with the 2 migration criteria.
+
+## Submission:
+
+Submit the following files on Submitty:
+
+1. lottery.c
+2. README.txt - Include your test result (when running the run_lottery.sh script) in the README. If your program works correctly and produces the right results, you don't need to include anything else in the README. If your program does not work as expected, you can add some explanation on what works and what does not work and reflect on why your program does not work.
+
+## Due Date
+
+10/08/2026, 11:59pm.
