@@ -298,4 +298,4 @@ Description:
 
 - free_percpu releases the per-CPU memory array previously allocated by alloc_percpu.
 
-Here is an [example kernel module](example/percpu) using these two functions.
+Here is an [example kernel module](examples/percpu) using these two functions.
