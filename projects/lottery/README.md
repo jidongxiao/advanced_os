@@ -281,21 +281,7 @@ Submit the following files on Submitty:
 
 ## APIs
 
-The instructor solution used the following APIs:
+- Managing Per-CPU data structure is important in this assignment, and here is an [example kernel module](examples/percpu) showing how to manage per-CPU data structures containing doubly linked lists protected by spinlocks.
 
-### `alloc_percpu`
+- Combining high-resolution timers (`hrtimer`) and workqueues (`INIT_WORK`) allows you to run sleepable tasks on a recurring schedule. Hardware timer interrupts run in atomic context, where sleeping, taking mutexes, or performing complex list operations is strictly prohibited. For this assignment, your load-balancing and task-migration logic must acquire per-CPU runqueue spinlocks and safely manipulate process lists every quantum—operations that require process context. Using the timer callback to enqueue a deferred work item enables a **periodic, sleepable execution loop** where your scheduler can safely evaluate multi-core ticket distribution, enforce hysteresis thresholds, and migrate tasks across cores. See the [timer workqueue example module](examples/timer_work) for a complete demonstration.
 
-```c
-#include <linux/percpu.h>
-
-void __percpu *alloc_percpu(type);
-void free_percpu(void __percpu *ptr);
-```
-
-Description: 
-
-- alloc_percpu dynamically allocates an instance of the specified data type for every online CPU core. Each core interacts with its own independent memory region, eliminating cache-line bouncing and global lock contention.
-
-- free_percpu releases the per-CPU memory array previously allocated by alloc_percpu.
-
-Here is an [example kernel module](examples/percpu) using these two functions.
