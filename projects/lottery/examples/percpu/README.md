@@ -68,13 +68,19 @@ dmesg | tail -n 25
 Expected log output pattern:
 
 ```plaintext
-percpu_demo: Initializing per-CPU structures
-percpu_demo: CPU 0 initialized with 2 items
-percpu_demo: CPU 1 initialized with 2 items
-percpu_demo: CPU 0 has work_item ID 101
-percpu_demo: CPU 0 has work_item ID 102
-percpu_demo: CPU 1 has work_item ID 201
-percpu_demo: CPU 1 has work_item ID 202
+[ 9856.935482] percpu_demo: Initializing per-CPU structures
+[ 9856.935769] percpu_demo: CPU 0 initialized with 2 items
+[ 9856.936048] percpu_demo: CPU 1 initialized with 2 items
+[ 9856.936355] percpu_demo: CPU 2 initialized with 2 items
+[ 9856.936678] percpu_demo: CPU 3 initialized with 2 items
+[ 9856.936982] percpu_demo: CPU 0 has work_item ID 101
+[ 9856.937273] percpu_demo: CPU 0 has work_item ID 102
+[ 9856.937580] percpu_demo: CPU 1 has work_item ID 201
+[ 9856.937874] percpu_demo: CPU 1 has work_item ID 202
+[ 9856.938160] percpu_demo: CPU 2 has work_item ID 301
+[ 9856.938454] percpu_demo: CPU 2 has work_item ID 302
+[ 9856.938758] percpu_demo: CPU 3 has work_item ID 401
+[ 9856.938982] percpu_demo: CPU 3 has work_item ID 402
 ```
 
 ### 4. Unload the Module
@@ -83,7 +89,6 @@ Unloading the module safely traverses each list, unlinks every node, frees dynam
 
 ```plaintext
 sudo rmmod percpu_demo
-dmesg | tail -n 10
 ```
 
 ### 5. Clean Build Artifacts
