@@ -46,7 +46,11 @@ Your load balancer runs periodically in process context (via `work_struct`). It 
 
 You are provided with `app.c`, `run_lottery.sh`, `Makefile`, and `lottery.h`. You must implement `lottery.c` to fulfill the expectations of these user-space components.
 
-### What `app.c` Does:
+---
+
+### 1. User Application Workload (`app.c`)
+
+#### What `app.c` Does:
 
 * **Opens the Character Device:** Opens `/dev/lottery` with `O_RDWR`.
 * **Registers with the Kernel:** Fills a `struct lottery_struct` with its PID and ticket count, then invokes the `LOTTERY_REGISTER` `ioctl`.
@@ -54,7 +58,7 @@ You are provided with `app.c`, `run_lottery.sh`, `Makefile`, and `lottery.h`. Yo
 * **Measures Wall-Clock Execution:** Tracks start and end times in milliseconds using `gettimeofday()`.
 * **Unregisters from the Kernel:** Sends the `LOTTERY_UNREGISTER` `ioctl` upon completing its calculation and closes `/dev/lottery`.
 
-### Kernel Requirements for `app.c`:
+#### Kernel Requirements for `app.c`:
 
 * **Character Device (`/dev/lottery`):** Must be created as a character misc device upon module loading (`insmod`).
 * **`LOTTERY_REGISTER` ioctl:**
@@ -90,43 +94,21 @@ You are provided with `app.c`, `run_lottery.sh`, `Makefile`, and `lottery.h`. Yo
 #### Kernel Log Formatting Requirements for `run_lottery.sh`:
 To ensure the test script can extract evaluation metrics, your kernel module must emit `pr_info()` logs formatted as follows:
 
+- Queue Status Snapshots
+
+```plaintext
+[LOTTERY_STATUS] CPU0: <tix> tix (<N> tasks) | CPU1: <tix> tix (<N> tasks) | CPU2: <tix> tix (<N> tasks) | CPU3: <tix> tix (<N> tasks) |
+```
+
+- Migration Logs
+
+```plaintext
+[LOTTERY] Load Balance: Migrated PID <pid> (<tix> tix) CPU <src> -> CPU <dst>
+```
+
 ## What You Need to Implement
 
 You are provided with `app.c`, `run_lottery.sh`, `Makefile`, and `lottery.h`. You must write `lottery.c` to complete the kernel module.
-
-### Data Structures (`lottery.c`)
-
-```c
-struct lottery_task {
-    pid_t pid;
-    unsigned long tickets;
-    struct task_struct *task;
-    int assigned_cpu;
-    u64 total_runtime_ms;
-    struct list_head node;
-};
-
-struct lottery_cpu_queue {
-    spinlock_t lock;
-    struct list_head tasks;
-    unsigned long total_tickets;
-    unsigned int task_count;
-};
-```
-
-# Required Functions
-
-static int __init lottery_init(void): Allocate per-CPU structures, set up the High-Resolution timer (hrtimer), initialize the work item (INIT_WORK), and register the misc device /dev/lottery.
-
-static void __exit lottery_exit(void): Cancel timers, flush workqueues, restore all queued processes (SIGCONT), free per-CPU memory, and unregister the misc device.
-
-static long lottery_ioctl(...): Handle LOTTERY_REGISTER (place on the lightest CPU queue, bind affinity) and LOTTERY_UNREGISTER (remove from queue, unpin task).
-
-static void balance_cpu_loads(void): Evaluate queue tickets across all cores and migrate candidate tasks according to the 4 migration criteria.
-
-static void lottery_sched_work_func(struct work_struct *work): Invoke balance_cpu_loads(), pick winners via pseudo-random lottery selection, update runtime statistics, and issue signals (SIGCONT for winner, SIGSTOP for losers).
-
-static enum hrtimer_restart lottery_sched_tick(struct hrtimer *timer): Periodic 50ms tick that schedules sched_work onto the system workqueue.
 
 # Running the Experiment
 
@@ -138,6 +120,152 @@ sudo bash run_lottery.sh
 
 # Expected Execution Log Output
 
-When functioning correctly, your load balancer will demonstrate clear proportional execution scaling and queue equilibrium:
+When functioning correctly, your load balancer will demonstrate clear proportional execution scaling and queue equilibrium. Here is an example of a successful run on a 4-core VM:
 
+```plaintext
+test@test-vm:~/os/lottery$ sudo bash run_lottery.sh 
+[sudo] password for test: 
+make -C /lib/modules/7.0.0-test/build M=/home/test/os/lottery modules
+make[1]: Entering directory '/home/test/linux-7.0'
+make[2]: Entering directory '/home/test/os/lottery'
+make[2]: Leaving directory '/home/test/os/lottery'
+make[1]: Leaving directory '/home/test/linux-7.0'
+=========================================
+ Installing 'lottery' Kernel Module
+=========================================
 
+=========================================
+ Starting Multi-Core Experiment (20 Tasks)
+ Target: lucas(47) across 20 processes
+ Ticket Distribution: 10 to 200 tickets
+=========================================
+
+Spawning 20 processes...
+  [Process 01] PID: 4114 | Tickets: 10
+  [Process 02] PID: 4116 | Tickets: 10
+  [Process 03] PID: 4118 | Tickets: 10
+  [Process 04] PID: 4120 | Tickets: 10
+  [Process 05] PID: 4122 | Tickets: 10
+  [Process 06] PID: 4124 | Tickets: 30
+  [Process 07] PID: 4126 | Tickets: 30
+  [Process 08] PID: 4128 | Tickets: 30
+  [Process 09] PID: 4130 | Tickets: 30
+  [Process 10] PID: 4132 | Tickets: 30
+  [Process 11] PID: 4134 | Tickets: 60
+  [Process 12] PID: 4136 | Tickets: 60
+  [Process 13] PID: 4138 | Tickets: 60
+  [Process 14] PID: 4140 | Tickets: 60
+  [Process 15] PID: 4142 | Tickets: 60
+  [Process 16] PID: 4144 | Tickets: 100
+  [Process 17] PID: 4146 | Tickets: 100
+  [Process 18] PID: 4148 | Tickets: 150
+  [Process 19] PID: 4150 | Tickets: 150
+  [Process 20] PID: 4152 | Tickets: 200
+
+All 20 processes launched.
+Waiting 3 seconds for initial process registration to settle...
+--------------------------------------------------------
+Capturing Steady-State Load Balancing Metrics...
+--------------------------------------------------------
+pid 4152, with 200 tickets: computing lucas(47) took 5.41 seconds.
+pid 4150, with 150 tickets: computing lucas(47) took 7.11 seconds.
+pid 4148, with 150 tickets: computing lucas(47) took 7.49 seconds.
+pid 4144, with 100 tickets: computing lucas(47) took 9.88 seconds.
+pid 4146, with 100 tickets: computing lucas(47) took 9.93 seconds.
+pid 4138, with 60 tickets: computing lucas(47) took 12.17 seconds.
+pid 4136, with 60 tickets: computing lucas(47) took 12.26 seconds.
+pid 4140, with 60 tickets: computing lucas(47) took 12.60 seconds.
+pid 4142, with 60 tickets: computing lucas(47) took 12.87 seconds.
+pid 4134, with 60 tickets: computing lucas(47) took 12.99 seconds.
+pid 4124, with 30 tickets: computing lucas(47) took 14.91 seconds.
+pid 4132, with 30 tickets: computing lucas(47) took 16.44 seconds.
+pid 4128, with 30 tickets: computing lucas(47) took 16.94 seconds.
+pid 4130, with 30 tickets: computing lucas(47) took 17.58 seconds.
+pid 4126, with 30 tickets: computing lucas(47) took 17.70 seconds.
+pid 4118, with 10 tickets: computing lucas(47) took 19.14 seconds.
+pid 4114, with 10 tickets: computing lucas(47) took 19.32 seconds.
+pid 4122, with 10 tickets: computing lucas(47) took 19.42 seconds.
+pid 4116, with 10 tickets: computing lucas(47) took 20.24 seconds.
+pid 4120, with 10 tickets: computing lucas(47) took 20.47 seconds.
+
+=========================================
+ Total Steady-State Execution Time: 17.398378400s
+=========================================
+
+=========================================
+ Steady-State Queue Load Snapshots
+=========================================
+[ 3142.478985] [LOTTERY_STATUS] CPU0: 270 tix (6 tasks) | CPU1: 320 tix (7 tasks) | CPU2: 310 tix (5 tasks) | CPU3: 300 tix (2 tasks) |
+[ 3142.982947] [LOTTERY_STATUS] CPU0: 270 tix (6 tasks) | CPU1: 320 tix (7 tasks) | CPU2: 310 tix (5 tasks) | CPU3: 300 tix (2 tasks) |
+[ 3143.478046] [LOTTERY_STATUS] CPU0: 270 tix (6 tasks) | CPU1: 320 tix (7 tasks) | CPU2: 310 tix (5 tasks) | CPU3: 300 tix (2 tasks) |
+[ 3143.975285] [LOTTERY_STATUS] CPU0: 270 tix (6 tasks) | CPU1: 320 tix (7 tasks) | CPU2: 310 tix (5 tasks) | CPU3: 300 tix (2 tasks) |
+[ 3144.476368] [LOTTERY_STATUS] CPU0: 270 tix (6 tasks) | CPU1: 310 tix (6 tasks) | CPU2: 310 tix (5 tasks) | CPU3: 110 tix (2 tasks) |
+[ 3144.981963] [LOTTERY_STATUS] CPU0: 260 tix (5 tasks) | CPU1: 250 tix (4 tasks) | CPU2: 270 tix (3 tasks) | CPU3: 220 tix (7 tasks) |
+[ 3145.475269] [LOTTERY_STATUS] CPU0: 260 tix (5 tasks) | CPU1: 250 tix (4 tasks) | CPU2: 270 tix (3 tasks) | CPU3: 220 tix (7 tasks) |
+[ 3145.975968] [LOTTERY_STATUS] CPU0: 260 tix (5 tasks) | CPU1: 250 tix (4 tasks) | CPU2: 270 tix (3 tasks) | CPU3: 220 tix (7 tasks) |
+[ 3146.485988] [LOTTERY_STATUS] CPU0: 220 tix (3 tasks) | CPU1: 220 tix (3 tasks) | CPU2: 190 tix (5 tasks) | CPU3: 220 tix (7 tasks) |
+[ 3146.990915] [LOTTERY_STATUS] CPU0: 170 tix (5 tasks) | CPU1: 160 tix (2 tasks) | CPU2: 190 tix (5 tasks) | CPU3: 180 tix (5 tasks) |
+[ 3147.475959] [LOTTERY_STATUS] CPU0: 170 tix (5 tasks) | CPU1: 160 tix (2 tasks) | CPU2: 190 tix (5 tasks) | CPU3: 180 tix (5 tasks) |
+[ 3147.982943] [LOTTERY_STATUS] CPU0: 170 tix (5 tasks) | CPU1: 160 tix (2 tasks) | CPU2: 190 tix (5 tasks) | CPU3: 180 tix (5 tasks) |
+[ 3148.483894] [LOTTERY_STATUS] CPU0: 170 tix (5 tasks) | CPU1: 160 tix (2 tasks) | CPU2: 190 tix (5 tasks) | CPU3: 180 tix (5 tasks) |
+[ 3148.984364] [LOTTERY_STATUS] CPU0: 110 tix (4 tasks) | CPU1: 120 tix (2 tasks) | CPU2: 130 tix (4 tasks) | CPU3: 140 tix (5 tasks) |
+[ 3149.475957] [LOTTERY_STATUS] CPU0: 110 tix (4 tasks) | CPU1: 120 tix (2 tasks) | CPU2: 130 tix (4 tasks) | CPU3: 140 tix (5 tasks) |
+[ 3149.975956] [LOTTERY_STATUS] CPU0: 110 tix (4 tasks) | CPU1: 120 tix (2 tasks) | CPU2: 130 tix (4 tasks) | CPU3: 140 tix (5 tasks) |
+[ 3150.475210] [LOTTERY_STATUS] CPU0: 110 tix (4 tasks) | CPU1: 120 tix (2 tasks) | CPU2: 130 tix (4 tasks) | CPU3: 140 tix (5 tasks) |
+[ 3150.975955] [LOTTERY_STATUS] CPU0: 110 tix (4 tasks) | CPU1: 120 tix (2 tasks) | CPU2: 130 tix (4 tasks) | CPU3: 140 tix (5 tasks) |
+[ 3151.475960] [LOTTERY_STATUS] CPU0: 110 tix (4 tasks) | CPU1: 80 tix (4 tasks) | CPU2: 90 tix (2 tasks) | CPU3: 100 tix (3 tasks) |
+[ 3151.975199] [LOTTERY_STATUS] CPU0: 50 tix (3 tasks) | CPU1: 80 tix (4 tasks) | CPU2: 60 tix (2 tasks) | CPU3: 70 tix (2 tasks) |
+[ 3152.475256] [LOTTERY_STATUS] CPU0: 50 tix (3 tasks) | CPU1: 70 tix (3 tasks) | CPU2: 60 tix (2 tasks) | CPU3: 20 tix (2 tasks) |
+[ 3152.975231] [LOTTERY_STATUS] CPU0: 50 tix (3 tasks) | CPU1: 70 tix (3 tasks) | CPU2: 60 tix (2 tasks) | CPU3: 20 tix (2 tasks) |
+[ 3153.475958] [LOTTERY_STATUS] CPU0: 50 tix (3 tasks) | CPU1: 70 tix (3 tasks) | CPU2: 60 tix (2 tasks) | CPU3: 20 tix (2 tasks) |
+[ 3153.975211] [LOTTERY_STATUS] CPU0: 20 tix (2 tasks) | CPU1: 70 tix (3 tasks) | CPU2: 60 tix (2 tasks) | CPU3: 20 tix (2 tasks) |
+[ 3154.480921] [LOTTERY_STATUS] CPU0: 20 tix (2 tasks) | CPU1: 70 tix (3 tasks) | CPU2: 60 tix (2 tasks) | CPU3: 20 tix (2 tasks) |
+[ 3154.990842] [LOTTERY_STATUS] CPU0: 20 tix (2 tasks) | CPU1: 70 tix (3 tasks) | CPU2: 60 tix (2 tasks) | CPU3: 20 tix (2 tasks) |
+[ 3155.476007] [LOTTERY_STATUS] CPU0: 20 tix (2 tasks) | CPU1: 70 tix (3 tasks) | CPU2: 30 tix (1 tasks) | CPU3: 20 tix (2 tasks) |
+[ 3155.975189] [LOTTERY_STATUS] CPU0: 20 tix (2 tasks) | CPU1: 60 tix (2 tasks) | CPU2: 10 tix (1 tasks) | CPU3: 20 tix (2 tasks) |
+[ 3156.475952] [LOTTERY_STATUS] CPU0: 20 tix (2 tasks) | CPU1: 60 tix (2 tasks) | CPU2: 10 tix (1 tasks) | CPU3: 20 tix (2 tasks) |
+[ 3156.975218] [LOTTERY_STATUS] CPU0: 20 tix (2 tasks) | CPU1: 0 tix (0 tasks) | CPU2: 10 tix (1 tasks) | CPU3: 20 tix (2 tasks) |
+[ 3157.488814] [LOTTERY_STATUS] CPU0: 20 tix (2 tasks) | CPU1: 0 tix (0 tasks) | CPU2: 10 tix (1 tasks) | CPU3: 20 tix (2 tasks) |
+[ 3157.975948] [LOTTERY_STATUS] CPU0: 20 tix (2 tasks) | CPU1: 0 tix (0 tasks) | CPU2: 10 tix (1 tasks) | CPU3: 20 tix (2 tasks) |
+[ 3158.653691] [LOTTERY_STATUS] CPU0: 20 tix (2 tasks) | CPU1: 0 tix (0 tasks) | CPU2: 0 tix (0 tasks) | CPU3: 0 tix (0 tasks) |
+[ 3159.275255] [LOTTERY_STATUS] CPU0: 10 tix (1 tasks) | CPU1: 0 tix (0 tasks) | CPU2: 0 tix (0 tasks) | CPU3: 0 tix (0 tasks) |
+
+=========================================
+ Steady-State Migration Events
+=========================================
+[ 3144.476011] [LOTTERY] Load Balance: Migrated PID 4116 (10 tix) CPU 1 -> CPU 3
+[ 3144.525305] [LOTTERY] Load Balance: Migrated PID 4124 (30 tix) CPU 1 -> CPU 3
+[ 3144.575301] [LOTTERY] Load Balance: Migrated PID 4118 (10 tix) CPU 2 -> CPU 3
+[ 3144.637006] [LOTTERY] Load Balance: Migrated PID 4126 (30 tix) CPU 2 -> CPU 3
+[ 3144.685334] [LOTTERY] Load Balance: Migrated PID 4132 (30 tix) CPU 1 -> CPU 3
+[ 3144.727074] [LOTTERY] Load Balance: Migrated PID 4114 (10 tix) CPU 0 -> CPU 3
+[ 3146.135046] [LOTTERY] Load Balance: Migrated PID 4122 (10 tix) CPU 0 -> CPU 2
+[ 3146.175980] [LOTTERY] Load Balance: Migrated PID 4130 (30 tix) CPU 0 -> CPU 2
+[ 3146.234984] [LOTTERY] Load Balance: Migrated PID 4128 (30 tix) CPU 1 -> CPU 2
+[ 3146.533336] [LOTTERY] Load Balance: Migrated PID 4140 (60 tix) CPU 1 -> CPU 0
+[ 3146.575317] [LOTTERY] Load Balance: Migrated PID 4116 (10 tix) CPU 3 -> CPU 0
+[ 3146.626970] [LOTTERY] Load Balance: Migrated PID 4124 (30 tix) CPU 3 -> CPU 0
+[ 3148.929116] [LOTTERY] Load Balance: Migrated PID 4134 (60 tix) CPU 2 -> CPU 3
+[ 3148.983943] [LOTTERY] Load Balance: Migrated PID 4138 (60 tix) CPU 0 -> CPU 1
+[ 3151.175280] [LOTTERY] Load Balance: Migrated PID 4118 (10 tix) CPU 3 -> CPU 1
+[ 3151.225966] [LOTTERY] Load Balance: Migrated PID 4122 (10 tix) CPU 2 -> CPU 1
+[ 3151.281923] [LOTTERY] Load Balance: Migrated PID 4126 (30 tix) CPU 3 -> CPU 1
+[ 3151.327714] [LOTTERY] Load Balance: Migrated PID 4130 (30 tix) CPU 2 -> CPU 1
+[ 3151.882707] [LOTTERY] Load Balance: Migrated PID 4132 (30 tix) CPU 3 -> CPU 2
+[ 3152.058620] [LOTTERY] Load Balance: Migrated PID 4118 (10 tix) CPU 1 -> CPU 3
+[ 3155.927066] [LOTTERY] Load Balance: Migrated PID 4122 (10 tix) CPU 1 -> CPU 2
+
+Total Steady-State Migrations: 21
+
+=========================================
+ Cleaning Up Module
+=========================================
+Done.
+```
+
+> **Note:** You do **not** need to match the exact timestamps, PID numbers, or total migration counts shown in the example below. Your output will naturally vary depending on CPU speed and scheduling randomness. 
+> 
+> However, your implementation **must clearly demonstrate two key observations** in the execution log:
+>
+> 1. **Proportional Execution Scaling (Lottery Properties):** High-weight tasks (200, 150 tix) must complete significantly faster than medium-weight tasks (100, 60 tix), which in turn must finish before low-weight tasks (30, 10 tix).
+> 2. **Dynamic Load Balancing:** Per-CPU ticket counts must stay relatively balanced across cores during steady state, and task migrations must trigger automatically whenever a core becomes underloaded (e.g., after a heavy task finishes) in accordance with the 4 migration criteria.
