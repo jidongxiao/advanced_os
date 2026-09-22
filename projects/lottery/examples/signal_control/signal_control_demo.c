@@ -1,6 +1,7 @@
 #include <linux/module.h>
 #include <linux/kernel.h>
 #include <linux/init.h>
+#include <linux/version.h>   /* REQUIRED for LINUX_VERSION_CODE and KERNEL_VERSION */
 #include <linux/sched.h>     /* For struct task_struct, get_pid_task() */
 #include <linux/sched/signal.h> /* For send_sig_info(), SEND_SIG_PRIV */
 #include <linux/pid.h>       /* For find_get_pid() */
