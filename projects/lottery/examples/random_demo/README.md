@@ -4,7 +4,7 @@ A minimal, self-contained Linux kernel module demonstrating how to safely genera
 
 ---
 
-## 1. Overview & Pedagogical Goals
+## 1. Overview
 
 In user-space applications, developers typically rely on C library calls like `rand()` or `random()`. In kernel space, standard C library functions are unavailable. Kernel modules must interact directly with the kernel's **Cryptographically Secure Pseudo-Random Number Generator (CSPRNG)** via `<linux/random.h>`.
 
@@ -31,13 +31,12 @@ To pick a winner in a lottery scheduler pool with `total_tickets` total tickets:
 
 ## 3. Building the Module
 
-### Prerequisites
-Ensure you have kernel headers and build essentials installed on your Linux environment (e.g., Ubuntu/Debian).
-
 ### Compilation
 Run the build automation tool inside the module directory to compile the kernel object (`.ko`).
 
-To clean up build artifacts, run the clean target.
+```bash
+make
+```
 
 ---
 
@@ -45,11 +44,28 @@ To clean up build artifacts, run the clean target.
 
 1. Load the kernel module into the kernel.
 
+```bash
+sudo insmod random_demo.ko
+```
+
 2. Inspect the kernel log (`dmesg`).
+
+```bash
+sudo dmesg | tail -n 5
+```
 
 3. Verify that the output prints a generated winning ticket within the range `[1, 100]`.
 
+```bash
+[89331.030216] [random_demo] Module loaded.
+[89331.055142] [random_demo] Total Pool: 100 | Drawn Winning Ticket: 29
+```
+
 4. Unload the module cleanly.
+
+```bash
+sudo rmmod random_demo
+```
 
 ---
 
