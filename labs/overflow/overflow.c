@@ -34,7 +34,7 @@
 int your_fcn(void) {
         char buf[5];
 
-        strcpy(buf, "aaaaa");
+        strcpy(buf, "aaaa");
 
         return 0;
 }
