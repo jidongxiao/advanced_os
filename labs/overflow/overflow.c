@@ -1,6 +1,6 @@
 /*
  * compile this program with:
- * # gcc -fno-stack-protector -o overflow overflow.c -g
+ * # gcc -fno-stack-protector -Wno-stringop-overflow -o overflow overflow.c -g
  *
  * to run this program, you have to turn off ASLR (address space layout randomization using this command:
  * # sudo sysctl -w kernel.randomize_va_space=0
