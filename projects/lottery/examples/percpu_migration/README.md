@@ -40,6 +40,16 @@ Monitor kernel logging to confirm that the process is moved across cores every 5
 sudo dmesg -w
 ```
 
+You should observe the migration like this:
+
+```bash
+[15595.797319] percpu_migration_demo: Migrated PID 8194 (python3) from CPU 0 -> CPU 1
+[15600.801519] percpu_migration_demo: Migrated PID 8194 (python3) from CPU 1 -> CPU 2
+[15605.820985] percpu_migration_demo: Migrated PID 8194 (python3) from CPU 2 -> CPU 3
+[15610.796247] percpu_migration_demo: Migrated PID 8194 (python3) from CPU 3 -> CPU 0
+[15615.797473] percpu_migration_demo: Migrated PID 8194 (python3) from CPU 0 -> CPU 1
+```
+
 ### 5. Cleanup
 Unload the module to restore default CPU affinity across all online cores, terminate the test process, and clean up build artifacts.
 
