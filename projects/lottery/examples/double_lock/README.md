@@ -50,12 +50,19 @@ sudo insmod double_lock_demo.ko
 2. Inspect the kernel log (`dmesg`).
 
 ```bash
-sudo dmesg | tail -n 5
+sudo dmesg | tail -n 7
 ```
 
 3. Verify that the module executes transfers in both directions (CPU 0 -> CPU 1 and CPU 1 -> CPU 0) while maintaining the global acquisition hierarchy.
 
 ```bash
+[88385.335818] [double_lock_demo] Module loaded.
+[88385.362434] [double_lock_demo] --- Test 1: Transfer CPU 0 -> CPU 1 ---
+[88385.398759] [double_lock_demo] Holding locks for CPU 0 and CPU 1 cleanly.
+[88385.436054] [double_lock_demo] Transferred item from CPU 0 (9 remaining) to CPU 1 (3 total)
+[88385.480276] [double_lock_demo] --- Test 2: Transfer CPU 1 -> CPU 0 ---
+[88385.516464] [double_lock_demo] Holding locks for CPU 0 and CPU 1 cleanly.
+[88385.554584] [double_lock_demo] Transferred item from CPU 1 (2 remaining) to CPU 0 (10 total)
 ```
 
 4. Unload the module cleanly.
