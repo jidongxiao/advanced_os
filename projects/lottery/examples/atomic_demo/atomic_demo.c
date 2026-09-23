@@ -1,64 +1,89 @@
 #include <linux/init.h>
 #include <linux/module.h>
 #include <linux/kernel.h>
-#include <linux/workqueue.h>
-#include <linux/atomic.h>
+#include <linux/kthread.h>
 #include <linux/delay.h>
+#include <linux/atomic.h>
+#include <linux/smp.h>
 
 MODULE_LICENSE("GPL");
-MODULE_AUTHOR("Course Instructor");
-MODULE_DESCRIPTION("Demo comparing non-atomic static int vs atomic_t counters in workqueues");
-MODULE_VERSION("1.0");
+MODULE_AUTHOR("Educational Lab");
+MODULE_DESCRIPTION("Safe multi-core atomic_t vs static int race demo");
+MODULE_VERSION("2.2");
 
-/* Work items to simulate concurrent execution */
-static struct work_struct work1;
-static struct work_struct work2;
+#define ITERATIONS 10000000
 
-/* Demonstration work handler called concurrently on multiple workqueue threads */
-static void worker_function(struct work_struct *work)
+static int unsafe_counter = 0;
+static atomic_t safe_counter = ATOMIC_INIT(0);
+static atomic_t start_gate = ATOMIC_INIT(0);
+
+static struct task_struct *thread1;
+static struct task_struct *thread2;
+
+static int worker_thread(void *data)
 {
-    /* Static local counters initialized once */
-    static int unsafe_counter = 0;
-    static atomic_t safe_counter = ATOMIC_INIT(0);
-    
     int i;
-    int current_safe_val;
 
-    for (i = 0; i < 100000; i++) {
-        /* UNSAFE: Non-atomic read-modify-write (Data race under concurrency) */
+    /* Spin until gate opens OR thread stop is requested */
+    while (atomic_read(&start_gate) == 0 && !kthread_should_stop())
+        cpu_relax();
+
+    if (kthread_should_stop())
+        return 0;
+
+    for (i = 0; i < ITERATIONS; i++) {
+        /* UNSAFE: Non-atomic increment (Data race under concurrency) */
         unsafe_counter++;
 
-        /* SAFE: Lockless, hardware-enforced atomic increment */
+        /* SAFE: Atomic hardware-locked increment */
         atomic_inc(&safe_counter);
     }
 
-    current_safe_val = atomic_read(&safe_counter);
+    /* Wait for kthread_stop() signal before exiting */
+    while (!kthread_should_stop())
+        msleep(10);
 
-    pr_info("[atomic_demo] Thread finished iteration pass.\n");
-    pr_info("[atomic_demo] -> Unsafe static int counter: %d\n", unsafe_counter);
-    pr_info("[atomic_demo] -> Safe atomic_t counter:      %d\n", current_safe_val);
+    return 0;
 }
 
 static int __init atomic_demo_init(void)
 {
-    pr_info("[atomic_demo] Module loaded. Dispatching concurrent work items...\n");
+    int cpu0 = 0;
+    int cpu1 = num_online_cpus() > 1 ? 1 : 0;
 
-    INIT_WORK(&work1, worker_function);
-    INIT_WORK(&work2, worker_function);
+    pr_info("[atomic_demo] Module loaded. Spawning synchronized kernel threads...\n");
 
-    /* Queue both work items to system workqueue to run concurrently */
-    schedule_work(&work1);
-    schedule_work(&work2);
+    if (num_online_cpus() < 2) {
+        pr_warn("[atomic_demo] System has only 1 CPU. Multi-core race requires >= 2 CPUs.\n");
+    }
+
+    /* Spawn threads pinned to CPUs */
+    thread1 = kthread_create_on_cpu(worker_thread, NULL, cpu0, "atomic_worker/0");
+    thread2 = kthread_create_on_cpu(worker_thread, NULL, cpu1, "atomic_worker/1");
+
+    if (IS_ERR(thread1) || IS_ERR(thread2)) {
+        pr_err("[atomic_demo] Failed to create kthreads\n");
+        return -ENOMEM;
+    }
+
+    wake_up_process(thread1);
+    wake_up_process(thread2);
+
+    /* Signal threads to start counting concurrently */
+    atomic_set(&start_gate, 1);
 
     return 0;
 }
 
 static void __exit atomic_demo_exit(void)
 {
-    /* Flush pending work to prevent module unload race conditions */
-    cancel_work_sync(&work1);
-    cancel_work_sync(&work2);
+    /* Stop threads cleanly */
+    if (thread1) kthread_stop(thread1);
+    if (thread2) kthread_stop(thread2);
 
+    pr_info("[atomic_demo] Expected Total (2 x %d): %d\n", ITERATIONS, ITERATIONS * 2);
+    pr_info("[atomic_demo] -> Unsafe static int counter result: %d\n", unsafe_counter);
+    pr_info("[atomic_demo] -> Safe atomic_t counter result:      %d\n", atomic_read(&safe_counter));
     pr_info("[atomic_demo] Module unloaded cleanly.\n");
 }
 

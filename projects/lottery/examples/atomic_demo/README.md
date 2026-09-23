@@ -41,14 +41,19 @@ make
 sudo insmod atomic_demo.ko
 ```
 
-2. Inspect the kernel log (`dmesg`).
-
-3. Observe how concurrent workqueue passes result in lost updates for the unsafe `static int` counter while the `atomic_t` counter yields exact, thread-safe totals.
-
-4. Unload the module cleanly.
+2. Wait for 1 minute, and then unload the module cleanly.
 
 ```bash
 sudo rmmod atomic_demo
+```
+3. Observe how concurrent workqueue passes result in lost updates for the unsafe `static int` counter while the `atomic_t` counter yields exact, thread-safe totals.
+
+```bash
+[  210.710468] [atomic_demo] Module loaded. Spawning synchronized kernel threads...
+[  290.658931] [atomic_demo] Expected Total (2 x 10000000): 20000000
+[  290.659275] [atomic_demo] -> Unsafe static int counter result: 15818812
+[  290.659604] [atomic_demo] -> Safe atomic_t counter result:      20000000
+[  290.659975] [atomic_demo] Module unloaded cleanly.
 ```
 
 ---
