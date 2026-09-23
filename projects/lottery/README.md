@@ -108,7 +108,7 @@ To ensure the test script can extract evaluation metrics, your kernel module mus
 
 You are provided with `app.c`, `run_lottery.sh`, `Makefile`, and `lottery.h`. You must write `lottery.c` to complete the kernel module.
 
-# Running the Experiment
+## Running the Experiment
 
 Run the automated evaluation script on your course VM (configured with 2 or 4 vCPUs):
 
@@ -116,7 +116,7 @@ Run the automated evaluation script on your course VM (configured with 2 or 4 vC
 sudo bash run_lottery.sh
 ```
 
-# Expected Execution Log Output
+## Expected Execution Log Output
 
 When functioning correctly, your load balancer will demonstrate clear proportional execution scaling and queue equilibrium. Here is an example of a successful run on a 4-core VM:
 
