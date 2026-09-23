@@ -2,9 +2,9 @@
 #include <linux/kernel.h>
 #include <linux/init.h>
 #include <linux/version.h>      /* Required for LINUX_VERSION_CODE and KERNEL_VERSION */
-#include <linux/sched.h>        /* For struct task_struct, get_pid_task() */
+#include <linux/sched.h>        /* For struct task_struct, get_pid_task(), task_cpu() */
 #include <linux/sched/task.h>   /* For set_cpus_allowed_ptr() */
-#include <linux/cpumask.h>      /* For cpumask_of(), num_online_cpus() */
+#include <linux/cpumask.h>      /* For cpumask_of(), num_online_cpus(), cpu_online_mask */
 #include <linux/pid.h>          /* For find_get_pid() */
 #include <linux/hrtimer.h>      /* For hrtimer APIs */
 #include <linux/workqueue.h>    /* For struct work_struct, INIT_WORK(), schedule_work() */
@@ -32,7 +32,7 @@ static void migrate_work_func(struct work_struct *work)
 {
     struct pid *pid_struct;
     struct task_struct *task;
-    int next_cpu, ret;
+    int old_cpu, next_cpu, ret;
 
     if (target_pid <= 0)
         return;
@@ -53,23 +53,26 @@ static void migrate_work_func(struct work_struct *work)
         return;
     }
 
-    /* 3. Determine the next online CPU core to target */
+    /* 3. Record current CPU execution core BEFORE requesting migration */
+    old_cpu = task_cpu(task);
+
+    /* 4. Determine the next online CPU core to target */
     next_cpu = cpumask_next(current_target_cpu, cpu_online_mask);
     if (next_cpu >= nr_cpu_ids)
         next_cpu = cpumask_first(cpu_online_mask);
 
-    /* 4. Enforce CPU affinity constraint to trigger kernel task migration */
+    /* 5. Enforce CPU affinity constraint to trigger kernel task migration */
     ret = set_cpus_allowed_ptr(task, cpumask_of(next_cpu));
     if (ret == 0) {
         pr_info("percpu_migration_demo: Migrated PID %d (%s) from CPU %d -> CPU %d\n",
-                target_pid, task->comm, task_cpu(task), next_cpu);
+                target_pid, task->comm, old_cpu, next_cpu);
         current_target_cpu = next_cpu;
     } else {
         pr_err("percpu_migration_demo: Failed to migrate PID %d to CPU %d (err=%d)\n",
                target_pid, next_cpu, ret);
     }
 
-    /* 5. Drop reference to task_struct */
+    /* 6. Drop reference to task_struct */
     put_task_struct(task);
 }
 
