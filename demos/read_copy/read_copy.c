@@ -5,6 +5,7 @@
 
 #define FILE_NAME "data.bin"
 #define FILE_SIZE 4096
+#define PAGE_SIZE 4096
 
 int main(void)
 {
@@ -22,22 +23,14 @@ int main(void)
     }
 
     /*
-     * malloc() gives us an anonymous user-space buffer.
+     * Allocate a page-aligned user buffer.
      */
-    buffer = malloc(FILE_SIZE);
-
-    if (buffer == NULL) {
-        perror("malloc");
+    if (posix_memalign((void **)&buffer, PAGE_SIZE, FILE_SIZE) != 0) {
+        perror("posix_memalign");
         close(fd);
         return 1;
     }
 
-    /*
-     * Ordinary buffered read().
-     *
-     * The kernel reads the file through the page cache
-     * and copies the data into our user buffer.
-     */
     n = read(fd, buffer, FILE_SIZE);
 
     if (n != FILE_SIZE) {

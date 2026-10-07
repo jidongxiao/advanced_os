@@ -139,12 +139,14 @@ static ssize_t pagecache_test_write(struct file *file,
      *
      * get_user_pages_remote() walks the process's page tables.
      */
+    mmap_read_lock(mm);
     ret = get_user_pages_remote(mm,
                                 user_address,
                                 1,
                                 FOLL_GET,
                                 &user_page,
                                 NULL);
+    mmap_read_unlock(mm);
 
     if (ret != 1) {
         pr_err("pagecache_test: get_user_pages_remote failed: %ld\n",
