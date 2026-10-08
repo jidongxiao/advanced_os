@@ -483,6 +483,7 @@ Submit the following files on Submitty:
    - pagecacheTest.c file is provided but is significantly incomplete. (-5)
  - Correctness (34 pts)
    - Program fails to compile. (-34)
+   - Hard code the content of the file (data.bin) in the kernel module and print the hard coded content. (-34)
    - Program fails to demonstrate that the two pages are two different physical pages. (-10)
    - Program fails to demonstrate that the two different physical pages contain identical content. (-10)
    - Program fails to print the first 16 bytes of these 2 pages. (-8)
