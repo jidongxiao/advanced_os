@@ -134,92 +134,49 @@ For example:
 echo "12345 5d48d17b0000 data.bin" > /proc/pagecache_test
 ```
 
-### Your module must:
+### Your module must: Compare the Physical Pages
 
-### 1. Find the User-Buffer Page
+Your kernel module must directly inspect the two physical pages:
 
-Given the PID and virtual address:
+* the physical page backing the user-space buffer, and
+* the page-cache page corresponding to offset 0 of `data.bin`.
 
-* locate the process;
-* obtain its `mm_struct`;
-* obtain the `struct page *` corresponding to the user-space virtual address;
-* determine its PFN.
+The module must:
 
-Report something similar to:
+1. Obtain the `struct page *` for each page.
+2. Obtain and print the **actual PFN** of each page.
+3. Obtain and print the **actual physical address** of each page.
+4. Temporarily map each page into the kernel address space.
+5. Print the **first 16 bytes of each physical page in hexadecimal**.
+6. Compare the **entire `PAGE_SIZE` bytes** of the two pages using `memcmp()`.
+7. Print the actual return value of `memcmp()`.
+
+For example:
 
 ```text
 USER BUFFER:
-  virtual address = 0x5d48d17b0000
   PFN              = 1585426
   physical address = 0x183112000
-```
+  first 16 bytes   = 7a 31 9f 04 2c 81 ...
 
-### 2. Find the Page-Cache Page
-
-Open the specified file and obtain its `address_space`.
-
-Find the page-cache page corresponding to **file offset 0**.
-
-Report something similar to:
-
-```text
 PAGE CACHE:
-  file offset      = 0
   PFN              = 1703623
   physical address = 0x19fec7000
+  first 16 bytes   = 7a 31 9f 04 2c 81 ...
+
+memcmp(PAGE_SIZE) = 0
 ```
 
-### 3. Compare the Physical Pages
+The values printed for the PFNs, physical addresses, and page contents must be **obtained from the pages at runtime**. Do not hard-code any of these values.
 
-Compare the PFNs.
+Because `data.bin` is generated from `/dev/urandom`, the actual bytes will be different each time the experiment is run. Therefore, the output must reflect the bytes actually stored in the two physical pages.
 
-If they are different, the two pages occupy different physical memory locations.
+A correct implementation should show that:
 
-Then compare the **entire contents of the two pages** (`PAGE_SIZE` bytes).
+* the two PFNs are different, and
+* the bytes read from the two pages match, with `memcmp(PAGE_SIZE)` returning `0`.
 
-A successful experiment should produce:
-
-```text
-CONTENTS:           SAME
-
-PFNs:               DIFFERENT
-
-RESULT:
-  TWO DIFFERENT PHYSICAL PAGES
-  CONTAIN THE SAME FILE DATA.
-```
-
-This is the key result of the assignment.
-
-It provides direct kernel-level evidence that the `read()` operation has resulted in **duplicate copies of the file data in physical memory**.
-
----
-
-## Important Restrictions
-
-### Do not use `mmap()`
-
-The experiment is specifically about the behavior of normal buffered `read()`.
-
-### Do not use `/proc/<pid>/maps`
-
-The user-space program gives you the virtual address directly.
-
-### Do not infer physical sharing from virtual addresses
-
-You must obtain the actual `struct page` objects and PFNs.
-
-### Compare the entire pages
-
-Do not compare only the first few bytes.
-
-The module must compare:
-
-```c
-PAGE_SIZE
-```
-
-bytes.
+This provides direct evidence that the same 4096-byte file data exists in two different physical pages.
 
 ---
 
@@ -247,7 +204,62 @@ echo "<PID> <USER_VIRTUAL_ADDRESS> data.bin" > /proc/pagecache_test
 Then inspect the kernel output:
 
 ```bash
-sudo dmesg | tail -50
+sudo dmesg | tail -n 64
+[103180.679078] ========================================
+[103180.679309] Page Cache vs User Buffer Experiment
+[103180.679584] ========================================
+[103180.679873] PID:              9440
+[103180.680299] User virtual addr: 0x55555555a000
+[103180.680501] File:             data.bin
+
+[103180.680839] USER BUFFER:
+[103180.680986]   virtual address = 0x55555555a000
+[103180.681180]   PFN              = 1576212
+[103180.681353]   physical address = 0x180d14000
+[103180.681564]   first 16 bytes   =
+[103180.681564]  a9
+[103180.681713]  69
+[103180.681794]  1a
+[103180.681906]  33
+[103180.681995]  4f
+[103180.682100]  77
+[103180.682184]  a2
+[103180.682262]  fb
+[103180.682347]  d9
+[103180.682431]  a3
+[103180.682516]  5e
+[103180.682599]  68
+[103180.682689]  33
+[103180.682770]  2a
+[103180.682878]  5d
+[103180.682974]  1b
+
+
+[103180.683467] PAGE CACHE:
+[103180.683660]   file offset      = 0
+[103180.683888]   PFN              = 1785074
+[103180.684153]   physical address = 0x1b3cf2000
+[103180.684437]   first 16 bytes   =
+[103180.684437]  a9
+[103180.684645]  69
+[103180.684774]  1a
+[103180.684915]  33
+[103180.685042]  4f
+[103180.685165]  77
+[103180.685286]  a2
+[103180.685411]  fb
+[103180.685536]  d9
+[103180.685662]  a3
+[103180.685783]  5e
+[103180.685924]  68
+[103180.686048]  33
+[103180.686180]  2a
+[103180.686313]  5d
+[103180.686444]  1b
+
+
+[103180.686935] memcmp(PAGE_SIZE) = 0
+[103180.687152] ========================================
 ```
 
 When finished:
