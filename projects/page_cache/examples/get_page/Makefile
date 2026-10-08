@@ -1,9 +1,10 @@
 obj-m += get_page.o
 
-KDIR ?= $(shell readlink -f /lib/modules/$$(uname -r)/build)
+# Dynamically target the running kernel's build directory
+KDIR ?= /lib/modules/$(shell uname -r)/build
 PWD := $(shell pwd)
 
-all:
+default:
 	$(MAKE) -C $(KDIR) M=$(PWD) modules
 
 clean:
