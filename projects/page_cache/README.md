@@ -432,19 +432,6 @@ The exact PFNs, physical addresses, timestamps, and file contents will vary betw
 
 These observations provide direct evidence that the same 4096-byte file data exists in **two different physical pages**.
 
-## Submission
-
-Submit the following file:
-
-1. `pagecacheTest.c` — your completed kernel module
-
-The following files are provided and **must not be modified**. Do not submit their two files**:
-
-* `readFile.c`
-* `Makefile`
-
-2. a README file including your test results.
-
 ---
 
 ## The Big Idea
@@ -458,3 +445,31 @@ You are using the kernel to **prove a performance and memory-management cost of 
 The goal is for you to be able to look at the two PFNs and say:
 
 **“These are two different physical pages, but they contain the same file data.”**
+
+## Submission
+
+Submit the following files on Submitty:
+
+1. `pagecacheTest.c` — your completed kernel module.
+
+2. README.txt - Include your test result (when running the run.sh script) in the README. If your program works correctly and produces the right results, you don't need to include anything else in the README. If your program does not work as expected, you can add some explanation on what works and what does not work and reflect on why your program does not work, and what you have tried (to troubleshoot) - such reflection/explanation may help you earn some partial credit.
+
+## Due Date
+
+10/26/2026, 11:59pm.
+
+## Grading Rubric
+
+50 pts
+ - Required Files (16 pts)
+   - README file is missing. (-8)
+   - README file is provided but complete testing results (when running run.sh) are missing. (-5)
+   - pagecacheTest.c file is missing. (-8)
+   - pagecacheTest.c file is provided but is significantly incomplete. (-5)
+ - Correctness (34 pts)
+   - Program fails to compile. (-34)
+   - Program fails to demonstrate that the two pages are two different physical pages. (-10)
+   - Program fails to demonstrate that the two different physical pages contain identical content. (-10)
+   - Program fails to print the first 16 bytes of these 2 pages. (-8)
+   - Program prints the first 16 bytes of these 2 pages, but the content are different. (-6)
+   - Program demonstrates expected behaviors but causes the kernel to crash. (-10)
