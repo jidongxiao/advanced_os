@@ -116,7 +116,7 @@ Create:
 pagecacheTest.c
 ```
 
-Your kernel module must create:
+Your kernel module must create the following proc interface so that we can communicate with your kernel module from the user space:
 
 ```text
 /proc/pagecache_test
@@ -185,90 +185,105 @@ This provides direct evidence that the same 4096-byte file data exists in two di
 Build and load your module:
 
 ```bash
-make
-sudo insmod pagecacheTest.ko
+$ make
+$ sudo insmod pagecacheTest.ko
 ```
 
 Run the provided program:
 
 ```bash
-./readFile
+$ ./readFile 
+PID: 11439
+Read 4096 bytes
+User buffer virtual address: 0x55555555a000
+First 16 bytes: 67 b8 1b 04 0b 24 5b eb 00 9e b6 81 5a 7c 06 99
+Waiting for kernel-module test...
 ```
 
-While it is waiting, use the PID and virtual address it printed:
+While it is waiting, use the PID and virtual address it printed on a second terminal to communicate with the kernel module via the proc interface:
 
 ```bash
-echo "<PID> <USER_VIRTUAL_ADDRESS> data.bin" > /proc/pagecache_test
+$ echo "<PID> <USER_VIRTUAL_ADDRESS> data.bin" > /proc/pagecache_test
 ```
+
+For the above readFile output, we should run:
+
+```bash
+$ echo "11439 55555555a000 data.bin" > /proc/pagecache_test
+```
+
+Notice that the 0x is not needed when passing the address to the kernel module.
 
 Then inspect the kernel output:
 
 ```bash
-sudo dmesg | tail -n 64
-[103180.679078] ========================================
-[103180.679309] Page Cache vs User Buffer Experiment
-[103180.679584] ========================================
-[103180.679873] PID:              9440
-[103180.680299] User virtual addr: 0x55555555a000
-[103180.680501] File:             data.bin
+$ sudo dmesg | tail -n 63
+[104046.546175] memcmp(PAGE_SIZE) = 0
+[104046.546401] ========================================
+[104046.765692] pagecache_test: unloaded
+[104535.607963] audit: type=1400 audit(1791432000.180:199): apparmor="DENIED" operation="capable" class="cap" profile="/usr/sbin/cupsd" pid=11157 comm="cupsd" capability=12  capname="net_admin"
+[104535.617734] audit: type=1400 audit(1791432000.189:200): apparmor="DENIED" operation="open" class="file" profile="snap.firmware-updater.firmware-notifier" name="/proc/sys/vm/max_map_count" pid=11021 comm="firmware-notifi" requested_mask="r" denied_mask="r" fsuid=1000 ouid=0
+[105386.986155] pagecache_test: loaded
+[105386.986630] Use /proc/pagecache_test to run the experiment
 
-[103180.680839] USER BUFFER:
-[103180.680986]   virtual address = 0x55555555a000
-[103180.681180]   PFN              = 1576212
-[103180.681353]   physical address = 0x180d14000
-[103180.681564]   first 16 bytes   =
-[103180.681564]  a9
-[103180.681713]  69
-[103180.681794]  1a
-[103180.681906]  33
-[103180.681995]  4f
-[103180.682100]  77
-[103180.682184]  a2
-[103180.682262]  fb
-[103180.682347]  d9
-[103180.682431]  a3
-[103180.682516]  5e
-[103180.682599]  68
-[103180.682689]  33
-[103180.682770]  2a
-[103180.682878]  5d
-[103180.682974]  1b
+[105388.340325] ========================================
+[105388.340549] Page Cache vs User Buffer Experiment
+[105388.340815] ========================================
+[105388.341093] PID:              11439
+[105388.341301] User virtual addr: 0x55555555a000
+[105388.341557] File:             data.bin
 
-
-[103180.683467] PAGE CACHE:
-[103180.683660]   file offset      = 0
-[103180.683888]   PFN              = 1785074
-[103180.684153]   physical address = 0x1b3cf2000
-[103180.684437]   first 16 bytes   =
-[103180.684437]  a9
-[103180.684645]  69
-[103180.684774]  1a
-[103180.684915]  33
-[103180.685042]  4f
-[103180.685165]  77
-[103180.685286]  a2
-[103180.685411]  fb
-[103180.685536]  d9
-[103180.685662]  a3
-[103180.685783]  5e
-[103180.685924]  68
-[103180.686048]  33
-[103180.686180]  2a
-[103180.686313]  5d
-[103180.686444]  1b
+[105388.341868] USER BUFFER:
+[105388.342018]   virtual address = 0x55555555a000
+[105388.342276]   PFN              = 1829894
+[105388.342665]   physical address = 0x1bec06000
+[105388.342942]   first 16 bytes   =
+[105388.342943]  67
+[105388.343153]  b8
+[105388.343276]  1b
+[105388.343393]  04
+[105388.343510]  0b
+[105388.343624]  24
+[105388.343739]  5b
+[105388.343879]  eb
+[105388.344006]  00
+[105388.344122]  9e
+[105388.344238]  b6
+[105388.344353]  81
+[105388.344469]  5a
+[105388.344584]  7c
+[105388.344702]  06
+[105388.344846]  99
 
 
-[103180.686935] memcmp(PAGE_SIZE) = 0
-[103180.687152] ========================================
+[105388.345305] PAGE CACHE:
+[105388.345451]   file offset      = 0
+[105388.345655]   PFN              = 1846174
+[105388.345884]   physical address = 0x1c2b9e000
+[105388.346136]   first 16 bytes   =
+[105388.346137]  67
+[105388.346323]  b8
+[105388.346446]  1b
+[105388.346574]  04
+[105388.346707]  0b
+[105388.346841]  24
+[105388.346979]  5b
+[105388.347112]  eb
+[105388.347236]  00
+[105388.347365]  9e
+[105388.347488]  b6
+[105388.347610]  81
+[105388.347727]  5a
+[105388.347845]  7c
+[105388.347961]  06
+[105388.348076]  99
+
+
+[105388.348515] memcmp(PAGE_SIZE) = 0
+[105388.348722] ========================================
 ```
 
-When finished:
-
-```bash
-sudo rmmod pagecacheTest
-```
-
-Automated Test
+### Automated Test
 
 An automated test script, run.sh, is also provided. It runs the entire experiment with a single command, including:
 
