@@ -101,7 +101,7 @@ Press Enter to exit...
 Your task is to implement **only the kernel module**:
 
 ```text
-pagecache_probe.c
+pagecacheTest.c
 ```
 
 The provided Makefile already builds both the user-space program and the kernel module.
@@ -113,7 +113,7 @@ The provided Makefile already builds both the user-space program and the kernel 
 Create:
 
 ```text
-pagecache_test.c
+pagecacheTest.c
 ```
 
 Your kernel module must create:
@@ -160,7 +160,7 @@ Open the specified file and obtain its `address_space`.
 
 Find the page-cache page corresponding to **file offset 0**.
 
-Report:
+Report something similar to:
 
 ```text
 PAGE CACHE:
@@ -229,13 +229,13 @@ Build and load your module:
 
 ```bash
 make
-sudo insmod pagecache_test.ko
+sudo insmod pagecacheTest.ko
 ```
 
 Run the provided program:
 
 ```bash
-./read_copy
+./readFile
 ```
 
 While it is waiting, use the PID and virtual address it printed:
@@ -253,18 +253,18 @@ sudo dmesg | tail -50
 When finished:
 
 ```bash
-sudo rmmod pagecache_test
+sudo rmmod pagecacheTest
 ```
 
 ## Submission
 
 Submit the following file:
 
-1. `pagecache.c` — your completed kernel module
+1. `pagecacheTest.c` — your completed kernel module
 
 The following files are provided and **must not be modified**. Do not submit their two files**:
 
-* `read_copy.c`
+* `readFile.c`
 * `Makefile`
 
 2. a README file including your test results.
