@@ -63,11 +63,17 @@ You will prove this by finding both physical pages, comparing their PFNs, and co
 
 The following files are provided:
 
-* `read_copy.c` — the user-space test program
+* `readFile.c` — the user-space test program
 * `Makefile` — the build script
-* `data.bin` — generated automatically by the provided Makefile
+* `data.bin` — a single-page (4096-byte) file generated automatically by the provided Makefile
 
 You are **not allowed to modify `read_copy.c` or the provided `Makefile`**.
+
+The provided Makefile creates data.bin using:
+
+dd if=/dev/urandom of=data.bin bs=4096 count=1
+
+Therefore, data.bin contains exactly 4096 bytes (one memory page) of randomly generated data.
 
 The provided user-space program:
 
