@@ -61,11 +61,15 @@ You will prove this by finding both physical pages, comparing their PFNs, and co
 
 ## What You Are Given
 
-The user-space test program is **already provided**.
+The following files are provided:
 
-You do not need to write or modify it.
+* `read_copy.c` — the user-space test program
+* `Makefile` — the build script
+* `data.bin` — generated automatically by the provided Makefile
 
-The program:
+You are **not allowed to modify `read_copy.c` or the provided `Makefile`**.
+
+The provided user-space program:
 
 1. Opens `data.bin`.
 2. Allocates a page-aligned user-space buffer.
@@ -75,7 +79,7 @@ The program:
 read(fd, buffer, 4096);
 ```
 
-4. Prints its PID and the virtual address of the buffer.
+4. Prints its PID and the virtual address of the user-space buffer.
 5. Waits for you to run your kernel module.
 
 For example:
@@ -88,7 +92,13 @@ First 16 bytes: ...
 Press Enter to exit...
 ```
 
-Your job is to write the **kernel module only**.
+Your task is to implement **only the kernel module**:
+
+```text
+pagecache_probe.c
+```
+
+The provided Makefile already builds both the user-space program and the kernel module.
 
 ---
 
@@ -207,22 +217,6 @@ bytes.
 
 ---
 
-## Questions to Answer
-
-Include brief answers in `README.txt`.
-
-### 1. Why are there potentially two physical pages containing the same file data after `read()`?
-
-### 2. What CPU operation creates the second copy?
-
-### 3. Why does this consume additional physical memory?
-
-### 4. How would accessing the same file through `mmap()` differ from using `read()`?
-
-### 5. Does `read()` always result in two physical copies of the data? Explain why or why not.
-
----
-
 ## Expected Experiment
 
 Build and load your module:
@@ -258,13 +252,18 @@ sudo rmmod pagecache_test
 
 ## Submission
 
-Submit:
+Submit the following file:
 
-1. `pagecache_test.c` — your kernel module
-2. `Makefile` — build script
-3. `README.txt` — implementation description, test results, and answers to the questions
+1. `pagecache.c` — your completed kernel module
 
-The user-space test program is provided and **must not be submitted**.
+The following files are provided and **must not be modified**. Do not submit their two files**:
+
+* `read_copy.c`
+* `Makefile`
+
+2. a README file including your test results.
+
+---
 
 ## The Big Idea
 
