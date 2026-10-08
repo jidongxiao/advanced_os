@@ -1,5 +1,5 @@
 CC = gcc
-CFLAGS = -O2 -Wall -Wextra
+CFLAGS = -Wall -Wextra
 
 USER_PROGRAMS = cache_time flush_reload page_cache_mincore \
                 sender receiver victim_secret monitor_secret
@@ -45,7 +45,7 @@ page_cache_file:
 
 
 clean:
-	rm -f $(USER_PROGRAMS) $(CHANNEL_FILES) $(PAGE_CACHE_FILE)
+	rm -f $(USER_PROGRAMS) $(CHANNEL_FILES) $(PAGE_CACHE_FILE) a.out cache_time_v2 *.o
 
 
 .PHONY: all clean channel_files page_cache_file
