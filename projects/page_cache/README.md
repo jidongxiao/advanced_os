@@ -268,6 +268,170 @@ When finished:
 sudo rmmod pagecacheTest
 ```
 
+Automated Test
+
+An automated test script, run.sh, is also provided. It runs the entire experiment with a single command, including:
+
+Removing a previously loaded pagecacheTest module.
+Building the experiment with make.
+Loading the kernel module.
+Running readFile.
+Obtaining the process PID and user-space virtual address automatically.
+Running the kernel-module test.
+Displaying the kernel output.
+Cleaning up the readFile process and kernel module.
+
+To run the automated test:
+
+chmod +x run.sh
+./run.sh
+
+You do not need to open multiple terminals or manually copy the PID and virtual address.
+
+A successful automated run should look similar to:
+
+```bash
+$ ./run.sh 
+========================================
+Cleaning up previous module
+========================================
+Removing already-loaded pagecacheTest...
+
+========================================
+Building the experiment
+========================================
+make: Nothing to be done for 'all'.
+
+========================================
+Loading kernel module
+========================================
+
+========================================
+Running readFile
+========================================
+readFile process started: PID 10885
+PID: 10885
+Read 4096 bytes
+User buffer virtual address: 0x55555555b000
+First 16 bytes: a9 69 1a 33 4f 77 a2 fb d9 a3 5e 68 33 2a 5d 1b
+Waiting for kernel-module test...
+
+========================================
+Verifying readFile
+========================================
+    PID    PPID S COMMAND
+  10885   10872 S readFile
+
+readFile PID:     10885
+User buffer:      0x55555555b000
+
+========================================
+Running kernel-module test
+========================================
+
+========================================
+Kernel output
+========================================
+[103972.562152]   first 16 bytes   =
+[103972.562153]  a9
+[103972.562388]  69
+[103972.562525]  1a
+[103972.562648]  33
+[103972.562794]  4f
+[103972.562954]  77
+[103972.563082]  a2
+[103972.563211]  fb
+[103972.563338]  d9
+[103972.563461]  a3
+[103972.563587]  5e
+[103972.563712]  68
+[103972.563852]  33
+[103972.563979]  2a
+[103972.564105]  5d
+[103972.564233]  1b
+
+
+[103972.564699] memcmp(PAGE_SIZE) = 0
+[103972.564940] ========================================
+[104046.497824] pagecache_test: unloaded
+[104046.514687] pagecache_test: loaded
+[104046.515154] Use /proc/pagecache_test to run the experiment
+
+[104046.537350] ========================================
+[104046.537587] Page Cache vs User Buffer Experiment
+[104046.537925] ========================================
+[104046.538249] PID:              10885
+[104046.538479] User virtual addr: 0x55555555b000
+[104046.538813] File:             data.bin
+
+[104046.539168] USER BUFFER:
+[104046.539351]   virtual address = 0x55555555b000
+[104046.539651]   PFN              = 1571701
+[104046.539940]   physical address = 0x17fb75000
+[104046.540224]   first 16 bytes   =
+[104046.540225]  a9
+[104046.540432]  69
+[104046.540559]  1a
+[104046.540680]  33
+[104046.540825]  4f
+[104046.540948]  77
+[104046.541075]  a2
+[104046.541205]  fb
+[104046.541315]  d9
+[104046.541442]  a3
+[104046.541570]  5e
+[104046.541696]  68
+[104046.541854]  33
+[104046.541974]  2a
+[104046.542101]  5d
+[104046.542229]  1b
+
+
+[104046.542682] PAGE CACHE:
+[104046.542883]   file offset      = 0
+[104046.543114]   PFN              = 1785074
+[104046.543383]   physical address = 0x1b3cf2000
+[104046.543663]   first 16 bytes   =
+[104046.543664]  a9
+[104046.543913]  69
+[104046.544033]  1a
+[104046.544152]  33
+[104046.544283]  4f
+[104046.544405]  77
+[104046.544532]  a2
+[104046.544653]  fb
+[104046.544803]  d9
+[104046.544922]  a3
+[104046.545051]  5e
+[104046.545177]  68
+[104046.545302]  33
+[104046.545424]  2a
+[104046.545551]  5d
+[104046.545673]  1b
+
+
+[104046.546175] memcmp(PAGE_SIZE) = 0
+[104046.546401] ========================================
+
+========================================
+Experiment complete
+========================================
+
+========================================
+Cleaning up
+========================================
+Stopping readFile (PID 10885)...
+Removing pagecacheTest...
+```
+
+The exact PFNs, physical addresses, timestamps, and file contents will vary between runs. However, a correct implementation must demonstrate the following:
+
+* The **two physical addresses must be different**, showing that the user buffer and page cache are backed by **different physical pages**.
+* The **contents of the two physical pages must be identical**, with the same bytes in the user-buffer page and the page-cache page.
+* Therefore, `memcmp(PAGE_SIZE)` should return **`0`**.
+
+These observations provide direct evidence that the same 4096-byte file data exists in **two different physical pages**.
+
 ## Submission
 
 Submit the following file:
