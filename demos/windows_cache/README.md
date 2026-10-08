@@ -52,8 +52,9 @@ Record the new TotalSeconds value.
 
 ## Why This Happens
 
-Cold Read (Cache Miss): The first read is bottlenecked by physical drive access speeds and storage latency.
-Warm Read (Cache Hit): The second read completes almost instantaneously because the Windows Cache Manager serves all 256 MB of data directly out of system RAM without reading from the disk.
+1. **Cold Read (Cache Miss):** The first read is bottlenecked by physical drive access speeds and storage latency.
+
+2. **Warm Read (Cache Hit):** The second read completes almost instantaneously because the Windows Cache Manager serves all 256 MB of data directly out of system RAM without reading from the disk.
 
 ## Cleanup
 
