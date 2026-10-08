@@ -1,10 +1,5 @@
 CC = gcc
-CFLAGS = -O2 -Wall -Wextra -march=native
-
-obj-m += meltdown_kernel.o
-
-KDIR := /lib/modules/$(shell uname -r)/build
-PWD  := $(shell pwd)
+CFLAGS = -O2 -Wall -Wextra
 
 USER_PROGRAMS = cache_time flush_reload page_cache_mincore \
                 sender receiver victim_secret monitor_secret
@@ -14,7 +9,7 @@ CHANNEL_FILES = bit0.bin bit1.bin bit2.bin bit3.bin \
 
 PAGE_CACHE_FILE = lookup_table.bin
 
-all: $(USER_PROGRAMS) channel_files page_cache_file kernel
+all: $(USER_PROGRAMS) channel_files page_cache_file
 
 
 cache_time: cache_time.c
@@ -49,13 +44,8 @@ page_cache_file:
 	dd if=/dev/zero of=$(PAGE_CACHE_FILE) bs=4096 count=2049 status=none
 
 
-kernel:
-	$(MAKE) -C $(KDIR) M=$(PWD) modules
-
-
 clean:
 	rm -f $(USER_PROGRAMS) $(CHANNEL_FILES) $(PAGE_CACHE_FILE)
-	$(MAKE) -C $(KDIR) M=$(PWD) clean
 
 
-.PHONY: all kernel clean channel_files page_cache_file
+.PHONY: all clean channel_files page_cache_file
