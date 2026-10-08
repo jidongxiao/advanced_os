@@ -477,6 +477,8 @@ Submit the following files on Submitty:
 
 - Passing structured input from user space to a kernel module through a /proc entry provides a simple interface for controlling or configuring kernel functionality. The module's .proc_write handler receives the entire input as a user-space buffer, uses copy_from_user() to safely copy it into kernel memory, and can then use sscanf() to parse multiple arguments such as a PID, virtual address, and filename. Students should also validate the number of successfully parsed arguments before using them. See the [proc input example module](examples/proc) for a complete demonstration.
 
+- Translating a user-space virtual address to its corresponding physical page in another process requires obtaining the process's `mm_struct` and using the kernel's page-management APIs. After obtaining the target process's `mm_struct` with `get_task_mm()`, call `mmap_read_lock()` before accessing the process's page tables, then use `get_user_pages_remote()` to resolve the user-space virtual address to a `struct page`. The `FOLL_GET` flag obtains a reference to the returned page, which must later be released with `put_page()`. Once the `struct page` is obtained, call `page_to_pfn()` to obtain its physical frame number (PFN), which can then be converted to a physical address by shifting it left by `PAGE_SHIFT`. Release the memory-map lock with `mmap_read_unlock()` after the page lookup is complete. See the [get_page example module](examples/get_page) for a complete demonstration.
+
 ## Grading Rubric
 
 50 pts

@@ -1,6 +1,7 @@
 obj-m += pagecacheTest.o
 
-KDIR ?= $(shell readlink -f /lib/modules/$$(uname -r)/build)
+# Dynamically target the running kernel's build directory
+KDIR ?= /lib/modules/$(shell uname -r)/build
 PWD := $(shell pwd)
 
 CC := gcc
@@ -12,7 +13,7 @@ readFile: readFile.c
 	$(CC) $(CFLAGS) -o $@ $<
 
 data.bin:
-	dd if=/dev/urandom of=data.bin bs=4096 count=1
+	dd if=/dev/urandom of=$@ bs=4096 count=1
 
 pagecacheTest.ko: pagecacheTest.c
 	$(MAKE) -C $(KDIR) M=$(PWD) modules
