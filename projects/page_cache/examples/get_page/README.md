@@ -64,7 +64,7 @@ sudo dmesg | tail -n 10
 
 Example Output:
 
-Plaintext
+```plaintext
 ========================================
 get_page Translation Result
 ========================================
@@ -73,6 +73,8 @@ Virtual address:   0x5c8c21847000
 PFN:               2227804
 Physical address:  0x21fe5c000
 ========================================
+```
+
 Step 4: Unload the Module
 Unload the module using rmmod:
 
