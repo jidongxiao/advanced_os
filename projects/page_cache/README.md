@@ -475,7 +475,7 @@ Submit the following files on Submitty:
 
 ## APIs
 
-- Passing structured input from user space to a kernel module through a /proc entry provides a simple interface for controlling or configuring kernel functionality. The module's .proc_write handler receives the entire input as a user-space buffer, uses copy_from_user() to safely copy it into kernel memory, and can then use sscanf() to parse multiple arguments such as a PID, virtual address, and filename. Students should also validate the number of successfully parsed arguments before using them. See the [proc input example module](examples/my_proc) for a complete demonstration.
+- Passing structured input from user space to a kernel module through a /proc entry provides a simple interface for controlling or configuring kernel functionality. The module's .proc_write handler receives the entire input as a user-space buffer, uses copy_from_user() to safely copy it into kernel memory, and can then use sscanf() to parse multiple arguments such as a PID, virtual address, and filename. Students should also validate the number of successfully parsed arguments before using them. See the [proc input example module](examples/proc) for a complete demonstration.
 
 ## Grading Rubric
 
