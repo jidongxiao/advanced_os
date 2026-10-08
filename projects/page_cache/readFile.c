@@ -50,8 +50,9 @@ int main(void)
 
     printf("\n");
 
-    printf("\nPress Enter to exit...\n");
-    getchar();
+    printf("Waiting for kernel-module test...\n");
+    fflush(stdout);
+    pause();
 
     free(buffer);
     close(fd);
