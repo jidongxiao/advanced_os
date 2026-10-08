@@ -40,12 +40,12 @@ This means that, for the same file data, physical memory can contain **two copie
 
 Page A and Page B contain the same data, but they can be **different physical pages**.
 
-This has two costs:
+This has two distinct costs:
 
-1. **CPU cost:** the kernel must copy the data from the page-cache page into the user-space buffer.
-2. **Memory cost:** the same data occupies two physical pages.
+1. Runtime performance cost: With read(), the kernel must copy the file data from the page-cache page into the user-space buffer. This consumes CPU time and memory-bandwidth and can also affect CPU caches.
+2. Physical memory cost: After the copy, the same data may exist in two different physical pages—one in the page cache and one backing the user-space buffer. The duplicate data therefore consumes additional physical memory.
 
-By contrast, with file-backed `mmap()`, the process can map the file's page-cache pages directly into its address space, avoiding this additional user-buffer copy.
+By contrast, with file-backed mmap(), the process can map the file's page-cache pages directly into its address space. This can avoid the additional copy and therefore avoids the corresponding CPU/memory-bandwidth cost and the extra physical page needed for the user-space copy.
 
 ### Your Goal
 
