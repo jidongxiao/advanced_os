@@ -11,15 +11,15 @@ This lab assumes that you have an ext4 file system environment in a Linux system
 ## Specification
 
 Use the provided `blkstat` tool to check the allocation status of individual blocks on your ext4 file system. You must identify an integer block number $N$ such that:
-1. **Block N** is **Allocated**
-2. **Block N+1** is **Not Allocated**
+1. Block $N$ is **Allocated**
+2. Block $N+1$ is **Not Allocated**
 
 ## Submission
 
 Submit a single screenshot on Submitty demonstrating your results. Your screenshot must clearly show:
 
-* Block N is allocated.
-* Block N+1 is unallocated.
+* Block $N$ is allocated.
+* Block $N+1$ is unallocated.
 * The two blocks are adjacent to each other.
 
 ### Example Screenshot
