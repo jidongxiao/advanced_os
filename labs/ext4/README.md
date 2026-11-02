@@ -6,11 +6,11 @@ In this lab, you will explore ext4 block allocation by inspecting the block bitm
 
 ## Assumption
 
-This lab assumes that you have an ext4 file system environment in a Linux system.
+This lab assumes that you have an ext4 file system environment in a Linux system. And have The Sleuth Kit (TSK) tool installed.
 
 ## Specification
 
-Use the provided `blkstat` tool to check the allocation status of individual blocks on your ext4 file system. You must identify an integer block number $N$ such that:
+Use the `blkstat` command (provided by TSK) to check the allocation status of individual blocks on your ext4 file system. You must identify an integer block number $N$ such that:
 1. Block $N$ is **Allocated**
 2. Block $N+1$ is **Not Allocated**
 
