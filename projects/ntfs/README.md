@@ -34,12 +34,12 @@ ntfs-img-kw-1.dd
 Once your implementation is complete, load your kernel module, which should be named `myntfs.ko`. You should then be able to mount the file system at `/mnt`.
 
 ```bash
+test@test-vm:~$ sudo insmod myntfs.ko
 test@test-vm:~$ sudo mount -t myntfs ntfs-img-kw-1.dd /mnt -o loop
 ```
-When you run `ls` to list the files and directories in the root directory of the file system, you should get the following results:
+Once the file system is mounted, and if now you run `ls` to list the files and directories in the root directory of the file system, you should get the following results:
 
 ```bash
-test@test-vm:~$ sudo insmod myntfs.ko
 test@test-vm:~$ ls /mnt/
  dir-n-6   dir-r-4   file-n-1.dat   file-n-3.dat   file-n-4.dat   file-n-5.dat   file-r-1.dat   file-r-3.dat  'System Volume Information'
 ```
