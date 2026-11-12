@@ -80,3 +80,4 @@ Run all the commands shown in the Expected Results section and include their res
 | `umount` command works correctly, without a program crash or kernel crash. | 5 |
 | `README.txt` includes the required test results. | 10 |
 | Loading or unloading the module causes a kernel crash. | -5 |
+| Code can't compile on the course VM running 7.0-test Linux kernel. | -40 |
